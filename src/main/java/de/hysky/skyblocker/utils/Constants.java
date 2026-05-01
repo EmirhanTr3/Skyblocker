@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
+
+import de.hysky.skyblocker.config.SkyblockerConfigManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -19,7 +21,9 @@ public interface Constants {
 	Pattern PLAYER_NAME = Pattern.compile("(?:\\[[0-9]+\\] )?(?:[" + Constants.LEVEL_EMBLEMS + "] )?(?:\\[[A-Z+]+\\] )?([A-Za-z0-9_]+)");
 
 	Supplier<MutableComponent> PREFIX = () -> {
-		if (FunUtils.shouldEnableFun()) {
+		if (!SkyblockerConfigManager.get().chat.chatPrefixConfig.toggle) {
+			return Component.empty();
+		} else if (FunUtils.shouldEnableFun()) {
 			return Component.empty().append(Component.literal("[").withStyle(ChatFormatting.GRAY))
 					.append(Component.literal("S").withColor(0x00FF4C))
 					.append(Component.literal("k").withColor(0x02FA60))
@@ -55,19 +59,18 @@ public interface Constants {
 
 		return Component.empty()
 				.append(Component.literal("[").withStyle(ChatFormatting.GRAY))
-				.append(Component.literal("S").withColor(0x00FF4C))
-				.append(Component.literal("k").withColor(0x02FA60))
-				.append(Component.literal("y").withColor(0x04F574))
-				.append(Component.literal("b").withColor(0x07EF88))
-				.append(Component.literal("l").withColor(0x09EA9C))
-				.append(Component.literal("o").withColor(0x0BE5AF))
-				.append(Component.literal("c").withColor(0x0DE0C3))
-				.append(Component.literal("k").withColor(0x10DAD7))
-				.append(Component.literal("e").withColor(0x12D5EB))
-				.append(Component.literal("r").withColor(0x14D0FF))
+				.append(createSkyblockerGradient(SkyblockerConfigManager.get().chat.chatPrefixConfig.prefix))
 				.append(Component.literal("] ").withStyle(ChatFormatting.GRAY));
 	};
 
+	static Component createSkyblockerGradient(String string) {
+		MutableComponent component = Component.empty();
+		for (int i = 0; i < string.length(); i++) {
+			component.append(Component.literal(string.substring(i, i + 1))
+					.withColor(OkLabColor.interpolate(0x00FF4C, 0x14D0FF, (float) i/(string.length()-1))));
+		}
+		return component;
+	}
 
 	List<String> SEYMOUR_IDS = List.of("VELVET_TOP_HAT", "CASHMERE_JACKET", "SATIN_TROUSERS", "OXFORD_SHOES");
 

@@ -12,6 +12,7 @@ import net.azureaaron.dandelion.api.Option;
 import net.azureaaron.dandelion.api.OptionGroup;
 import net.azureaaron.dandelion.api.controllers.FloatController;
 import net.azureaaron.dandelion.api.controllers.IntegerController;
+import net.azureaaron.dandelion.api.controllers.StringController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
@@ -187,6 +188,28 @@ public class ChatCategory {
 										() -> config.chat.chatRuleConfig.announcementLength,
 										newValue -> config.chat.chatRuleConfig.announcementLength = newValue)
 								.controller(IntegerController.createBuilder().range(5, 200).slider(1).build())
+								.build())
+						.build())
+
+
+				.group(OptionGroup.createBuilder()
+						.name(Component.literal("Skyblocker Prefix"))
+						.collapsed(false)
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.literal("Prefix Toggle"))
+								.description(Component.literal("Toggles the prefix."))
+								.binding(defaults.chat.chatPrefixConfig.toggle,
+										() -> config.chat.chatPrefixConfig.toggle,
+										newValue -> config.chat.chatPrefixConfig.toggle = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<String>createBuilder()
+								.name(Component.literal("Prefix"))
+								.description(Component.literal("Sets the prefix."))
+								.binding(defaults.chat.chatPrefixConfig.prefix,
+										() -> config.chat.chatPrefixConfig.prefix,
+										newValue -> config.chat.chatPrefixConfig.prefix = newValue)
+								.controller(StringController.createBuilder().build())
 								.build())
 						.build())
 				.build();
