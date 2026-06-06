@@ -22,7 +22,7 @@ import de.hysky.skyblocker.utils.Formatters;
 import de.hysky.skyblocker.utils.ItemUtils;
 import de.hysky.skyblocker.utils.NEURepoManager;
 import de.hysky.skyblocker.utils.Utils;
-import de.hysky.skyblocker.utils.render.HudHelper;
+import de.hysky.skyblocker.utils.render.GuiHelper;
 import de.hysky.skyblocker.utils.scheduler.MessageScheduler;
 import io.github.moulberry.repo.data.NEUItem;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -35,7 +35,7 @@ import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.ScreenPosition;
@@ -112,8 +112,8 @@ public class VisitorHelper extends AbstractWidget {
 	}
 
 	public static boolean shouldRender() {
-		boolean isHelperEnabled = SkyblockerConfigManager.get().farming.visitorHelper.visitorHelper;
-		boolean isGardenMode = SkyblockerConfigManager.get().farming.visitorHelper.visitorHelperGardenOnly;
+		boolean isHelperEnabled = SkyblockerConfigManager.get().farming.visitorHelper.enabled;
+		boolean isGardenMode = SkyblockerConfigManager.get().farming.visitorHelper.showInGardenOnly;
 		return isHelperEnabled && (!isGardenMode || Utils.isInGarden() || Utils.getArea() == Area.Hub.BAZAAR);
 	}
 
@@ -200,7 +200,7 @@ public class VisitorHelper extends AbstractWidget {
 	/**
 	 * Draws the visitor items and their associated information.
 	 */
-	public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+	public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
 		if (activeVisitors.isEmpty()) return;
 
 		Font textRenderer = Minecraft.getInstance().font;
@@ -208,7 +208,7 @@ public class VisitorHelper extends AbstractWidget {
 		int newWidth = 0;
 		int x = getX() + PADDING;
 		int y = getY() - (int) (textRenderer.lineHeight / 2f - ICON_SIZE * 0.95f / 2) + PADDING;
-		context.fill(getX(), getY(), getRight(), getBottom(), 0x18_80_80_80);
+		graphics.fill(getX(), getY(), getRight(), getBottom(), 0x18_80_80_80);
 
 		for (Object2IntMap.Entry<Component> entry : groupedItems.object2IntEntrySet()) {
 			Component itemName = entry.getKey();
@@ -221,13 +221,13 @@ public class VisitorHelper extends AbstractWidget {
 			for (Visitor visitor : visitors) {
 				int yPosition = y + index * (LINE_HEIGHT + textRenderer.lineHeight);
 
-				context.pose().pushMatrix();
-				context.pose().translate(x, yPosition + (float) textRenderer.lineHeight / 2 - ICON_SIZE * 0.95f / 2);
-				context.pose().scale(0.95f, 0.95f);
-				context.renderItem(visitor.head(), 0, 0);
-				context.pose().popMatrix();
+				graphics.pose().pushMatrix();
+				graphics.pose().translate(x, yPosition + (float) textRenderer.lineHeight / 2 - ICON_SIZE * 0.95f / 2);
+				graphics.pose().scale(0.95f, 0.95f);
+				graphics.item(visitor.head(), 0, 0);
+				graphics.pose().popMatrix();
 
-				context.drawString(textRenderer, visitor.name(), x + (int) (ICON_SIZE * 0.95f) + 4, yPosition, CommonColors.WHITE, true);
+				graphics.text(textRenderer, visitor.name(), x + (int) (ICON_SIZE * 0.95f) + 4, yPosition, CommonColors.WHITE, true);
 
 				index++;
 			}
@@ -238,14 +238,14 @@ public class VisitorHelper extends AbstractWidget {
 			int yPosition = y + index * (LINE_HEIGHT + textRenderer.lineHeight);
 
 			ItemStack cachedStack = getCachedItem(itemName.getString());
-			context.pose().pushMatrix();
-			context.pose().translate(iconX, yPosition + (float) textRenderer.lineHeight / 2 - ICON_SIZE * 0.95f / 2);
-			context.pose().scale(0.95f, 0.95f);
-			context.renderItem(cachedStack, 0, 0);
-			context.pose().popMatrix();
+			graphics.pose().pushMatrix();
+			graphics.pose().translate(iconX, yPosition + (float) textRenderer.lineHeight / 2 - ICON_SIZE * 0.95f / 2);
+			graphics.pose().scale(0.95f, 0.95f);
+			graphics.item(cachedStack, 0, 0);
+			graphics.pose().popMatrix();
 
 			MutableComponent name = cachedStack.getHoverName().copy();
-			MutableComponent itemText = SkyblockerConfigManager.get().farming.visitorHelper.showStacksInVisitorHelper && totalAmount >= 64
+			MutableComponent itemText = SkyblockerConfigManager.get().farming.visitorHelper.showInStacks && totalAmount >= 64
 					? name.append(" x" + (totalAmount / 64) + " stacks + " + (totalAmount % 64))
 					: name.append(" x" + totalAmount);
 
@@ -259,7 +259,7 @@ public class VisitorHelper extends AbstractWidget {
 			}
 			newWidth = Math.max(newWidth, textX + textRenderer.width(itemText) - x);
 
-			drawTextWithHoverUnderline(context, textRenderer, itemText, textX, yPosition, mouseX, mouseY);
+			drawTextWithHoverUnderline(graphics, textRenderer, itemText, textX, yPosition, mouseX, mouseY);
 
 			index++;
 		}
@@ -301,7 +301,7 @@ public class VisitorHelper extends AbstractWidget {
 				int yPosition = y + index * (LINE_HEIGHT + textRenderer.lineHeight);
 
 				MutableComponent name = itemName.copy();
-				Component itemText = SkyblockerConfigManager.get().farming.visitorHelper.showStacksInVisitorHelper && totalAmount >= 64
+				Component itemText = SkyblockerConfigManager.get().farming.visitorHelper.showInStacks && totalAmount >= 64
 						? name.append(" x" + (totalAmount / 64) + " stacks + " + (totalAmount % 64))
 						: name.append(" x" + totalAmount);
 
@@ -334,11 +334,11 @@ public class VisitorHelper extends AbstractWidget {
 		updateItems();
 	}
 
-	private static void drawTextWithHoverUnderline(GuiGraphics context, Font textRenderer, Component text, int x, int y, double mouseX, double mouseY) {
-		context.drawString(textRenderer, text, x, y, CommonColors.WHITE, true);
+	private static void drawTextWithHoverUnderline(GuiGraphicsExtractor graphics, Font textRenderer, Component text, int x, int y, double mouseX, double mouseY) {
+		graphics.text(textRenderer, text, x, y, CommonColors.WHITE, true);
 
 		if (isMouseOverText(textRenderer, text, x, y, mouseX, mouseY)) {
-			context.hLine(x, x + textRenderer.width(text), y + textRenderer.lineHeight, CommonColors.WHITE);
+			graphics.horizontalLine(x, x + textRenderer.width(text), y + textRenderer.lineHeight, CommonColors.WHITE);
 		}
 	}
 
@@ -346,7 +346,7 @@ public class VisitorHelper extends AbstractWidget {
 	 * Checks if the mouse is over a specific rectangular region.
 	 */
 	private static boolean isMouseOverText(Font textRenderer, Component text, int x, int y, double mouseX, double mouseY) {
-		return HudHelper.pointIsInArea(mouseX, mouseY, x, y, x + textRenderer.width(text), y + textRenderer.lineHeight);
+		return GuiHelper.pointIsInArea(mouseX, mouseY, x, y, x + textRenderer.width(text), y + textRenderer.lineHeight);
 	}
 
 	@Override

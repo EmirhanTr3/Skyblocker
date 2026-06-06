@@ -24,7 +24,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -113,37 +113,37 @@ public class ProfileViewerScreen extends Screen {
 	}
 
 	@Override
-	public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 		synchronized (this) {
-			super.render(context, mouseX, mouseY, delta);
+			super.extractRenderState(graphics, mouseX, mouseY, delta);
 		}
 
 		int rootX = width / 2 - GUI_WIDTH / 2;
 		int rootY = height / 2 - GUI_HEIGHT / 2 + 5;
 
-		context.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, rootX, rootY, 0, 0, GUI_WIDTH, GUI_HEIGHT, GUI_WIDTH, GUI_HEIGHT);
+		graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, rootX, rootY, 0, 0, GUI_WIDTH, GUI_HEIGHT, GUI_WIDTH, GUI_HEIGHT);
 		for (ProfileViewerNavButton button : profileViewerNavButtons) {
 			button.setX(rootX + button.getIndex() * 28 + 4);
 			button.setY(rootY - 28);
-			button.render(context, mouseX, mouseY, delta);
+			button.extractRenderState(graphics, mouseX, mouseY, delta);
 		}
 
 
-		if (textWidget != null) textWidget.render(context, font, rootX + 8, rootY + 120, mouseX, mouseY);
-		drawPlayerEntity(context, playerName != null ? playerName : "Loading...", rootX, rootY, mouseX, mouseY);
+		if (textWidget != null) textWidget.extractRenderState(graphics, font, rootX + 8, rootY + 120, mouseX, mouseY);
+		drawPlayerEntity(graphics, playerName != null ? playerName : "Loading...", rootX, rootY, mouseX, mouseY);
 
 		if (profileViewerPages[activePage] != null) {
 			profileViewerPages[activePage].markWidgetsAsVisible();
-			profileViewerPages[activePage].render(context, mouseX, mouseY, delta, rootX + 93, rootY + 7);
+			profileViewerPages[activePage].extractRenderState(graphics, mouseX, mouseY, delta, rootX + 93, rootY + 7);
 		} else {
-			context.drawCenteredString(font, profileNotFound ? errorMessage : "Loading...", rootX + 200, rootY + 80, Color.WHITE.getRGB());
+			graphics.centeredText(font, profileNotFound ? errorMessage : "Loading...", rootX + 200, rootY + 80, Color.WHITE.getRGB());
 		}
 	}
 
-	private void drawPlayerEntity(GuiGraphics context, String username, int rootX, int rootY, int mouseX, int mouseY) {
+	private void drawPlayerEntity(GuiGraphicsExtractor graphics, String username, int rootX, int rootY, int mouseX, int mouseY) {
 		if (entity != null)
-			renderEntityInInventoryFollowsMouse(context, rootX + 9, rootY + 16, rootX + 89, rootY + 124, 42, 0.0625F, mouseX, mouseY, entity);
-		context.drawCenteredString(font, username.length() > 15 ? username.substring(0, 15) : username, rootX + 47, rootY + 14, Color.WHITE.getRGB());
+			renderEntityInInventoryFollowsMouse(graphics, rootX + 9, rootY + 16, rootX + 89, rootY + 124, 42, 0.0625F, mouseX, mouseY, entity);
+		graphics.centeredText(font, username.length() > 15 ? username.substring(0, 15) : username, rootX + 47, rootY + 14, Color.WHITE.getRGB());
 	}
 
 	private CompletableFuture<Void> fetchPlayerData(String username) {

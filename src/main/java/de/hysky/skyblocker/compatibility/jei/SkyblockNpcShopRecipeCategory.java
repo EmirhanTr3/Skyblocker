@@ -1,12 +1,12 @@
 package de.hysky.skyblocker.compatibility.jei;
 
 import de.hysky.skyblocker.skyblock.itemlist.recipes.SkyblockNpcShopRecipe;
-import de.hysky.skyblocker.utils.render.HudHelper;
+import de.hysky.skyblocker.utils.render.GuiHelper;
 import mezz.jei.api.gui.drawable.IDrawableStatic;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.types.IRecipeType;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
 
@@ -21,17 +21,17 @@ public final class SkyblockNpcShopRecipeCategory extends AbstractSkyblockRecipeC
 	}
 
 	@Override
-	public void draw(SkyblockNpcShopRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics context, double mouseX, double mouseY) {
+	public void draw(SkyblockNpcShopRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphicsExtractor graphics, double mouseX, double mouseY) {
 		IDrawableStatic recipeArrow = this.guiHelper.getRecipeArrow();
 		int arrowYOffset = (this.getHeight() - recipeArrow.getHeight()) / 2;
-		recipeArrow.draw(context, 61, arrowYOffset);
+		recipeArrow.draw(graphics, 61, arrowYOffset);
 
 		int itemX = 61 + ((recipeArrow.getWidth() - ITEM_SIZE) / 2);
 		int itemY = arrowYOffset - ITEM_SIZE - NPC_ITEM_PADDING;
-		context.renderItem(recipe.getNpcItem(), itemX, itemY);
+		graphics.item(recipe.getRepresentative(), itemX, itemY);
 
-		if (HudHelper.pointIsInArea(mouseX, mouseY, itemX, itemY, itemX + ITEM_SIZE, itemY + ITEM_SIZE)) {
-			this.drawTooltip(context, recipe.getNpcItem().getHoverName(), mouseX, mouseY);
+		if (GuiHelper.pointIsInArea(mouseX, mouseY, itemX, itemY, itemX + ITEM_SIZE, itemY + ITEM_SIZE)) {
+			this.drawTooltip(graphics, recipe.getRepresentative().getHoverName(), mouseX, mouseY);
 		}
 	}
 }

@@ -5,6 +5,7 @@ import de.hysky.skyblocker.SkyblockerMod;
 import de.hysky.skyblocker.annotations.Init;
 import de.hysky.skyblocker.mixins.accessors.AbstractContainerScreenAccessor;
 import de.hysky.skyblocker.skyblock.itemlist.ItemRepository;
+import de.hysky.skyblocker.utils.EnchantedBookUtils;
 import de.hysky.skyblocker.utils.Formatters;
 import de.hysky.skyblocker.utils.NEURepoManager;
 import de.hysky.skyblocker.utils.TextTransformer;
@@ -22,7 +23,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.ScrollableLayout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
@@ -79,7 +80,8 @@ public class ValueBreakdownPopup extends AbstractPopupScreen {
 						if (neuId == null) return Component.literal(s);
 						NEUItem neuItem = NEURepoManager.getItemByNeuId(neuId);
 						if (neuItem == null) return Component.literal(s);
-						return TextTransformer.fromLegacy(neuItem.getLore().getFirst());
+						String enchantName = EnchantedBookUtils.getEnchantNameFromLore(neuItem.getLore());
+						return TextTransformer.fromLegacy(enchantName);
 					}
 			)),
 			Map.entry(Calculation.Type.SKIN, new BasicSingleAppender(
@@ -278,15 +280,15 @@ public class ValueBreakdownPopup extends AbstractPopupScreen {
 	}
 
 	@Override
-	public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
-		super.render(context, mouseX, mouseY, deltaTicks);
-		context.drawCenteredString(font, title, width / 2, 15, -1);
+	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
+		super.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+		graphics.centeredText(font, title, width / 2, 15, -1);
 	}
 
 	@Override
-	public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
-		super.renderBackground(context, mouseX, mouseY, delta);
-		drawPopupBackground(context, scrollable.getX(), scrollable.getY(), scrollable.getWidth(), scrollable.getHeight());
+	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		super.extractBackground(graphics, mouseX, mouseY, delta);
+		drawPopupBackground(graphics, scrollable.getX(), scrollable.getY(), scrollable.getWidth(), scrollable.getHeight());
 	}
 
 	private static Component getCoinsText(double price) {

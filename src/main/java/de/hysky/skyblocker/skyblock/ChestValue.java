@@ -5,7 +5,6 @@ import de.hysky.skyblocker.config.SkyblockerConfigManager;
 import de.hysky.skyblocker.config.configs.DungeonsConfig;
 import de.hysky.skyblocker.config.configs.UIAndVisualsConfig;
 import de.hysky.skyblocker.mixins.accessors.AbstractContainerScreenAccessor;
-import de.hysky.skyblocker.mixins.accessors.ScreenAccessor;
 import de.hysky.skyblocker.skyblock.crimson.CrimsonFaction;
 import de.hysky.skyblocker.skyblock.crimson.kuudra.Kuudra;
 import de.hysky.skyblocker.skyblock.crimson.kuudra.KuudraProfileData;
@@ -64,6 +63,49 @@ public class ChestValue {
 			"Infernal Kuudra Key", "KUUDRA_INFERNAL_TIER_KEY"
 			);
 	/**
+	 * Items that never have price data because no one is buying them.
+	 */
+	public static final Set<String> WORTHLESS_ITEMS = Set.of(
+			"DUNGEON_DISC_1",
+			"DUNGEON_DISC_2",
+			"DUNGEON_DISC_3",
+			"DUNGEON_DISC_4",
+			"DUNGEON_DISC_5",
+			"MAXOR_THE_FISH",
+			"STORM_THE_FISH",
+			"GOLDOR_THE_FISH",
+			"ENCHANTMENT_ULTIMATE_NO_PAIN_NO_GAIN_1",
+			"ENCHANTMENT_ULTIMATE_NO_PAIN_NO_GAIN_2",
+			"ENCHANTMENT_ULTIMATE_NO_PAIN_NO_GAIN_3",
+			"ENCHANTMENT_ULTIMATE_NO_PAIN_NO_GAIN_4",
+			"ENCHANTMENT_ULTIMATE_NO_PAIN_NO_GAIN_5",
+			"ENCHANTMENT_ULTIMATE_COMBO_1",
+			"ENCHANTMENT_ULTIMATE_COMBO_2",
+			"ENCHANTMENT_ULTIMATE_COMBO_3",
+			"ENCHANTMENT_ULTIMATE_COMBO_4",
+			"ENCHANTMENT_ULTIMATE_COMBO_5",
+			"ENCHANTMENT_ULTIMATE_BANK_1",
+			"ENCHANTMENT_ULTIMATE_BANK_2",
+			"ENCHANTMENT_ULTIMATE_BANK_3",
+			"ENCHANTMENT_ULTIMATE_BANK_4",
+			"ENCHANTMENT_ULTIMATE_BANK_5",
+			"ENCHANTMENT_ULTIMATE_JERRY_1",
+			"ENCHANTMENT_ULTIMATE_JERRY_2",
+			"ENCHANTMENT_ULTIMATE_JERRY_3",
+			"ENCHANTMENT_ULTIMATE_JERRY_4",
+			"ENCHANTMENT_ULTIMATE_JERRY_5",
+			"ENCHANTMENT_FEATHER_FALLING_6",
+			"ENCHANTMENT_FEATHER_FALLING_7",
+			"ENCHANTMENT_FEATHER_FALLING_8",
+			"ENCHANTMENT_FEATHER_FALLING_9",
+			"ENCHANTMENT_FEATHER_FALLING_10",
+			"ENCHANTMENT_INFINITE_QUIVER_6",
+			"ENCHANTMENT_INFINITE_QUIVER_7",
+			"ENCHANTMENT_INFINITE_QUIVER_8",
+			"ENCHANTMENT_INFINITE_QUIVER_9",
+			"ENCHANTMENT_INFINITE_QUIVER_10"
+	);
+	/**
 	 * Pattern to match the essence count from Croesus tooltips or the chest menus.
 	 *
 	 * <p>Note: Essence within the Croesus tooltip won't list the amount if you only got one essence.
@@ -81,9 +123,12 @@ public class ChestValue {
 	public static final Pattern HEAVY_PEARL_PATTERN = Pattern.compile("Heavy Pearl(?: x(?<amount>\\d+))?");
 	private static final Pattern MINION_PATTERN = Pattern.compile("Minion (I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII)$");
 
+	public static boolean hideChestNameLabel = false;
+
 	@Init
 	public static void init() {
 		ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+			hideChestNameLabel = false;
 			if (Utils.isOnSkyblock() && screen instanceof ContainerScreen genericContainerScreen) {
 				Component title = screen.getTitle();
 				String titleString = title.getString();
@@ -141,11 +186,13 @@ public class ChestValue {
 				//Regular item price
 				// Implicitly excludes the "Reroll Shard" item in Kuudra chests which is a Wheel of Fate from the profit calculation
 				if (!skyblockApiId.isEmpty() && !(name.contains("Essence") || name.contains("Shard"))) {
-					DoubleBooleanPair priceData = ItemUtils.getItemPrice(skyblockApiId);
+					if (!WORTHLESS_ITEMS.contains(skyblockApiId)) {
+						DoubleBooleanPair priceData = ItemUtils.getItemPrice(skyblockApiId);
 
-					//Add the item price to the profit
-					profit += priceData.leftDouble() * stack.getCount();
-					hasIncompleteData |= !priceData.rightBoolean();
+						//Add the item price to the profit
+						profit += priceData.leftDouble() * stack.getCount();
+						hasIncompleteData |= !priceData.rightBoolean();
+					}
 
 					continue;
 				}
@@ -385,7 +432,7 @@ public class ChestValue {
 		int backgroundWidth = ((AbstractContainerScreenAccessor) genericContainerScreen).getImageWidth();
 		int y = ((AbstractContainerScreenAccessor) genericContainerScreen).getY();
 		int x = ((AbstractContainerScreenAccessor) genericContainerScreen).getX();
-		((ScreenAccessor) genericContainerScreen).setTitle(Component.empty());
+		hideChestNameLabel = true;
 		Font textRenderer = Minecraft.getInstance().font;
 		int chestValueWidth = Math.min(textRenderer.width(chestValue), Math.max((backgroundWidth - 8) / 2 - 2, backgroundWidth - 8 - textRenderer.width(title)));
 

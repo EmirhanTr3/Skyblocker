@@ -2,7 +2,7 @@ package de.hysky.skyblocker.skyblock.profileviewer2.widgets;
 
 import java.util.function.IntConsumer;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -18,7 +18,6 @@ public final class PageTabWidget extends ProfileViewerWidget {
 	private static final int HEIGHT = 32;
 	/** Required for the button to be aligned with the background texture. */
 	private static final int HEIGHT_OFFSET = 4;
-	private static final int ITEM_SIZE = 16;
 	private final ItemStack icon;
 	private final int index;
 	private final IntConsumer pageSwitcher;
@@ -42,7 +41,7 @@ public final class PageTabWidget extends ProfileViewerWidget {
 	}
 
 	@Override
-	protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float a) {
+	protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		Identifier textureUnselected = this.index == 0 ? TEXTURE_1_UNSELECTED : TEXTURE_2_UNSELECTED;
 		Identifier textureSelected = this.index == 0 ? TEXTURE_1_SELECTED : TEXTURE_2_SELECTED;
 		Identifier texture = this.selected ? textureSelected : textureUnselected;
@@ -50,6 +49,8 @@ public final class PageTabWidget extends ProfileViewerWidget {
 		int iconYOffset = this.selected ? -2 : 0;
 
 		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, texture, this.getX(), this.getY(), this.getWidth(), this.getHeight());
-		graphics.renderFakeItem(this.icon, this.getX() + (this.getWidth() - ITEM_SIZE) / 2, this.getY() + iconYOffset + (this.getHeight() - ITEM_SIZE) / 2);
+		graphics.fakeItem(this.icon, this.getX() + (this.getWidth() - ITEM_SIZE) / 2, this.getY() + iconYOffset + (this.getHeight() - ITEM_SIZE) / 2);
+
+		super.handleCursor(graphics);
 	}
 }

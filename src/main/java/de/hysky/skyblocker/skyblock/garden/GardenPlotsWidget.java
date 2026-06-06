@@ -5,7 +5,7 @@ import de.hysky.skyblocker.config.SkyblockerConfigManager;
 import de.hysky.skyblocker.skyblock.itemlist.ItemRepository;
 import de.hysky.skyblocker.skyblock.tabhud.util.PlayerListManager;
 import de.hysky.skyblocker.utils.ItemUtils;
-import de.hysky.skyblocker.utils.render.HudHelper;
+import de.hysky.skyblocker.utils.render.GuiHelper;
 import de.hysky.skyblocker.utils.render.gui.ItemButtonWidget;
 import de.hysky.skyblocker.utils.scheduler.MessageScheduler;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -16,7 +16,7 @@ import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -42,6 +42,7 @@ public class GardenPlotsWidget extends AbstractContainerWidget {
 	private static final Identifier SLOT_HIGHLIGHT_FRONT_SPRITE = Identifier.withDefaultNamespace("container/slot_highlight_front");
 
 	public static final Int2IntMap GARDEN_PLOT_TO_SLOT = Int2IntMap.ofEntries(
+			Int2IntMap.entry(0, 12), // The Barn
 			Int2IntMap.entry(1, 7),
 			Int2IntMap.entry(2, 11),
 			Int2IntMap.entry(3, 13),
@@ -141,54 +142,66 @@ public class GardenPlotsWidget extends AbstractContainerWidget {
 	}
 
 	@Override
-	protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 		Font textRenderer = Minecraft.getInstance().font;
-		Matrix3x2fStack matrices = context.pose();
+		Matrix3x2fStack matrices = graphics.pose();
 		matrices.pushMatrix();
 		matrices.translate(getX(), getY());
 
-		context.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND_TEXTURE, 0, 0, 0, 0, getWidth(), getHeight(), getWidth(), getHeight());
+		graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND_TEXTURE, 0, 0, 0, 0, getWidth(), getHeight(), getWidth(), getHeight());
 
-		context.drawString(textRenderer, editingSlotIcon < 0 ? getMessage() : Component.literal("Custom Icon"), 8, 6, CommonColors.DARK_GRAY, false);
+		graphics.text(textRenderer, editingSlotIcon < 0 ? getMessage() : Component.literal("Custom Icon"), 8, 6, CommonColors.DARK_GRAY, false);
 
 		hoveredSlot = -1;
 		long timeMillis = System.currentTimeMillis();
 		@Nullable ItemStack[] stacks = editingSlotIcon >= 0 ? customIconOptionsItems : items;
 		for (int i = 0; i < stacks.length; i++) {
-			ItemStack item = stacks[i];
-			if (item == null) continue;
-
-
 			int slotX = 7 + (i % 5) * 18;
 			int slotY = 17 + (i / 5) * 18;
 			boolean hovered = slotX + getX() <= mouseX && mouseX < slotX + getX() + 18 && slotY + getY() <= mouseY && mouseY < slotY + getY() + 18;
+			boolean infested = infectedPlots.contains(i);
 
 			if (hovered) {
-				context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_BACK_SPRITE, slotX - 3, slotY - 3, 24, 24);
+				graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_BACK_SPRITE, slotX - 3, slotY - 3, 24, 24);
+			}
+
+			ItemStack item = stacks[i];
+			// Still show hover highlight & pest outline in empty slots.
+			if (item == null) {
+				if (hovered)
+					graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_FRONT_SPRITE, slotX - 3, slotY - 3, 24, 24);
+
+				if (infested && (timeMillis & 512) != 0)
+					GuiHelper.drawBorder(graphics, slotX + 1, slotY + 1, 16, 16, CommonColors.RED);
+
+				continue;
+			}
+
+			if (hovered) {
 				//noinspection deprecation
 				if (ClientTags.isInLocal(ConventionalItemTags.GLASS_PANES, item.getItem().builtInRegistryHolder().key())) {
-					context.renderItem(item, slotX + 1, slotY + 1);
+					graphics.item(item, slotX + 1, slotY + 1);
 				} else {
 					matrices.pushMatrix();
 					matrices.translate(slotX, slotY);
 					matrices.scale(1.125f, 1.125f);
-					context.renderItem(item, 0, 0);
+					graphics.item(item, 0, 0);
 					matrices.popMatrix();
 				}
-				context.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_FRONT_SPRITE, slotX - 3, slotY - 3, 24, 24);
+				graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_FRONT_SPRITE, slotX - 3, slotY - 3, 24, 24);
 				hoveredSlot = i;
 			} else
-				context.renderItem(item, slotX + 1, slotY + 1);
+				graphics.item(item, slotX + 1, slotY + 1);
 
 			if (editingSlotIcon >= 0) {
 				if (hovered) {
-					context.setComponentTooltipForNextFrame(textRenderer, List.of(item.getHoverName()), mouseX, mouseY);
+					graphics.setComponentTooltipForNextFrame(textRenderer, List.of(item.getHoverName()), mouseX, mouseY);
 				}
 				continue;
 			}
-			boolean infested = infectedPlots.contains(i);
+
 			if (infested && (timeMillis & 512) != 0) {
-				HudHelper.drawBorder(context, slotX + 1, slotY + 1, 16, 16, CommonColors.RED);
+				GuiHelper.drawBorder(graphics, slotX + 1, slotY + 1, 16, 16, CommonColors.RED);
 			}
 
 			// tooltip
@@ -211,14 +224,14 @@ public class GardenPlotsWidget extends AbstractContainerWidget {
 										Component.empty(),
 										TP_TEXT
 								);
-				context.setComponentTooltipForNextFrame(textRenderer, tooltip, mouseX, mouseY);
+				graphics.setComponentTooltipForNextFrame(textRenderer, tooltip, mouseX, mouseY);
 			}
 		}
 
 		matrices.popMatrix();
 
 		for (ItemButtonWidget widget : widgets) {
-			widget.render(context, mouseX, mouseY, delta);
+			widget.extractRenderState(graphics, mouseX, mouseY, delta);
 		}
 
 
@@ -269,7 +282,7 @@ public class GardenPlotsWidget extends AbstractContainerWidget {
 			return;
 		}
 
-		if (SkyblockerConfigManager.get().farming.garden.closeScreenOnPlotClick && Minecraft.getInstance().screen != null)
+		if (SkyblockerConfigManager.get().farming.plotsWidget.closeScreenOnPlotClick && Minecraft.getInstance().screen != null)
 			Minecraft.getInstance().screen.onClose();
 
 		if (hoveredSlot == 12) MessageScheduler.INSTANCE.sendMessageAfterCooldown("/plottp barn", true);

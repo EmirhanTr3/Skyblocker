@@ -70,7 +70,8 @@ public class WidgetsConfigurationScreen extends Screen implements ContainerListe
 			Map.entry("the rift", Location.THE_RIFT),
 			Map.entry("jerry's workshop", Location.WINTER_ISLAND),
 			Map.entry("galatea", Location.GALATEA),
-			Map.entry("backwater bayou", Location.BACKWATER_BAYOU)
+			Map.entry("backwater bayou", Location.BACKWATER_BAYOU),
+			Map.entry("lotus atoll", Location.LOTUS_ATOLL)
 	);
 	private Location currentLocation = Utils.getLocation();
 
@@ -150,7 +151,7 @@ public class WidgetsConfigurationScreen extends Screen implements ContainerListe
 	 * @param targetLocation    open the preview to this location
 	 * @param widgetLayerToGoTo go to this widget's layer
 	 */
-	public WidgetsConfigurationScreen(Location targetLocation, String widgetLayerToGoTo, Screen parent) {
+	public WidgetsConfigurationScreen(Location targetLocation, String widgetLayerToGoTo, @Nullable Screen parent) {
 		this(null, "", targetLocation, WidgetManager.getScreenBuilder(targetLocation).getPositionRuleOrDefault(widgetLayerToGoTo).screenLayer());
 		this.parent = parent;
 	}

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -91,21 +91,21 @@ public class PartyEntryListWidget extends ContainerObjectSelectionList<PartyEntr
 	}
 
 	@Override
-	public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
-		//context.drawGuiTexture(BACKGROUND_TEXTURE, x, top-8, getRowWidth()+16+6, bottom-top+16);
+	public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		//graphics.drawGuiTexture(BACKGROUND_TEXTURE, x, top-8, getRowWidth()+16+6, bottom-top+16);
 
 		if (children().isEmpty()) {
 			Component string = Component.translatable("skyblocker.partyFinder.loadingError");
 			Font textRenderer = Minecraft.getInstance().font;
-			context.drawWordWrap(textRenderer, string, getRowLeft(), getY() + 10, getRowWidth(), 0xFFFFFFFF, false);
-		} else super.renderWidget(context, mouseX, mouseY, delta);
+			graphics.textWithWordWrap(textRenderer, string, getRowLeft(), getY() + 10, getRowWidth(), 0xFFFFFFFF, false);
+		} else super.renderWidget(graphics, mouseX, mouseY, delta);
 	}
 
 	@Override
-	protected void renderListSeparators(GuiGraphics context) {
+	protected void renderListSeparators(GuiGraphicsExtractor graphics) {
 	}
 
 	@Override
-	protected void renderListBackground(GuiGraphics context) {
+	protected void renderListBackground(GuiGraphicsExtractor graphics) {
 	}
 }

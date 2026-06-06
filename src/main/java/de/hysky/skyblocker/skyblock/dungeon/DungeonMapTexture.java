@@ -26,7 +26,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldTerrainRenderContext;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.MapRenderer;
 import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -192,8 +192,8 @@ public class DungeonMapTexture {
 		}
 	}
 
-	protected static void blitMap(GuiGraphics graphics) {
-		graphics.submitMapRenderState(MAP_RENDER_STATE);
+	protected static void blitMap(GuiGraphicsExtractor graphics) {
+		graphics.map(MAP_RENDER_STATE);
 	}
 
 	public static void close() {

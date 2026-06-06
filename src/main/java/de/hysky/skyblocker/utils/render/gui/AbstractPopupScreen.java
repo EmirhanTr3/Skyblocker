@@ -1,7 +1,7 @@
 package de.hysky.skyblocker.utils.render.gui;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
@@ -24,24 +24,23 @@ public class AbstractPopupScreen extends Screen {
 
 	@Override
 	public void onClose() {
-		assert this.minecraft != null;
 		this.minecraft.setScreen(this.backgroundScreen);
 	}
 
 	@Override
-	public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
-		this.backgroundScreen.renderBackground(context, -1, -1, delta);
-		context.nextStratum();
-		this.backgroundScreen.render(context, -1, -1, delta);
-		context.nextStratum();
-		this.renderTransparentBackground(context);
+	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		this.backgroundScreen.extractBackground(graphics, -1, -1, delta);
+		graphics.nextStratum();
+		this.backgroundScreen.extractRenderState(graphics, -1, -1, delta);
+		graphics.nextStratum();
+		this.renderTransparentBackground(graphics);
 	}
 
 	/**
 	 * These are the inner positions and size of the popup, not outer
 	 */
-	public static void drawPopupBackground(GuiGraphics context, int x, int y, int width, int height) {
-		context.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_TEXTURE, x - 18, y - 18, width + 36, height + 36);
+	public static void drawPopupBackground(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
+		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_TEXTURE, x - 18, y - 18, width + 36, height + 36);
 	}
 
 	@Override

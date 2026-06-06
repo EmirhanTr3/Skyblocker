@@ -14,7 +14,7 @@ import de.hysky.skyblocker.skyblock.tabhud.widget.TabHudWidget;
 import de.hysky.skyblocker.utils.EnumUtils;
 import de.hysky.skyblocker.utils.ItemUtils;
 import de.hysky.skyblocker.utils.Location;
-import de.hysky.skyblocker.utils.render.HudHelper;
+import de.hysky.skyblocker.utils.render.GuiHelper;
 import de.hysky.skyblocker.utils.render.gui.DropdownWidget;
 import de.hysky.skyblocker.utils.render.gui.NoopInput;
 import de.hysky.skyblocker.utils.scheduler.Scheduler;
@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -356,7 +356,7 @@ public class PreviewTab implements Tab {
 			// padding thing
 			widgetOptions.addWidget(new AbstractWidget(0, 0, width, 20, Component.empty()) {
 				@Override
-				protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+				protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 				}
 
 				@Override
@@ -432,8 +432,8 @@ public class PreviewTab implements Tab {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
-			this.renderScrollbar(context, mouseX, mouseY);
+		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+			this.extractScrollbar(graphics, mouseX, mouseY);
 			height = 0;
 			for (AbstractWidget widget : widgets) {
 				widget.setX(getX() + 1);
@@ -441,7 +441,7 @@ public class PreviewTab implements Tab {
 
 				height += widget.getHeight() + 1;
 				if (isNotVisible(widget.getY(), widget.getBottom(), widget.getHeight())) continue;
-				widget.render(context, mouseX, mouseY, delta);
+				widget.extractRenderState(graphics, mouseX, mouseY, delta);
 			}
 		}
 
@@ -478,18 +478,18 @@ public class PreviewTab implements Tab {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 			hoveredPoint = null;
-			context.drawString(client.font, getMessage(), getX(), getY(), CommonColors.WHITE, true);
-			context.pose().pushMatrix();
-			context.pose().translate(getX(), getY() + 10);
+			graphics.text(client.font, getMessage(), getX(), getY(), CommonColors.WHITE, true);
+			graphics.pose().pushMatrix();
+			graphics.pose().translate(getX(), getY() + 10);
 			// Rectangle thing
 			int x = getWidth() / 6;
 			int w = (int) (4 * getWidth() / 6f);
 			int y = 5; // 30 / 6
 			int h = 20;
 
-			HudHelper.drawBorder(context, x, y + 1, w, h, CommonColors.WHITE);
+			GuiHelper.drawBorder(graphics, x, y + 1, w, h, CommonColors.WHITE);
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
 					int squareX = x + (i * getWidth()) / 3;
@@ -515,10 +515,10 @@ public class PreviewTab implements Tab {
 						hoveredPoint = new PositionRule.Point(verticalPoints[j], horizontalPoints[i]);
 					}
 
-					context.fill(squareX - 1, squareY - 1, squareX + 2, squareY + 2, hoveredAnchor ? CommonColors.RED : selectedAnchor ? CommonColors.YELLOW : CommonColors.WHITE);
+					graphics.fill(squareX - 1, squareY - 1, squareX + 2, squareY + 2, hoveredAnchor ? CommonColors.RED : selectedAnchor ? CommonColors.YELLOW : CommonColors.WHITE);
 				}
 			}
-			context.pose().popMatrix();
+			graphics.pose().popMatrix();
 		}
 
 		@Override

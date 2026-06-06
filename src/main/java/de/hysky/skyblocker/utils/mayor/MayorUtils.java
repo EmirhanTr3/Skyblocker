@@ -9,7 +9,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import de.hysky.skyblocker.annotations.Init;
 import de.hysky.skyblocker.events.SkyblockEvents;
 import de.hysky.skyblocker.utils.Http;
-import de.hysky.skyblocker.utils.SkyblockTime;
+import de.hysky.skyblocker.utils.time.SkyblockTime;
 import de.hysky.skyblocker.utils.render.RenderHelper;
 import de.hysky.skyblocker.utils.scheduler.Scheduler;
 
@@ -63,6 +63,13 @@ public class MayorUtils {
 		RenderHelper.runOnRenderThread(() -> {
 			// 5 extra minutes to allow the cache to expire. This is a simpler than checking age and subtracting from max age and rescheduling again.
 			Scheduler.INSTANCE.schedule(MayorUtils::tickMayorCache, (int) (millisUntilNextMayorChange / 50) + 5 * 60 * 20);
+			// Reset the instances as soon as the new mayor is elected to prevent Paul's +10 score from being applied when its not actually active (within the extra 5 minutes above)
+			Scheduler.INSTANCE.schedule(() -> {
+				mayor = Mayor.EMPTY;
+				minister = Minister.EMPTY;
+				LOGGER.info("[Skyblocker] Mayor set to {}, minister set to {}.", mayor, minister);
+				SkyblockEvents.MAYOR_CHANGE.invoker().onMayorChange();
+			}, (int) (millisUntilNextMayorChange / 50));
 		});
 	}
 
@@ -70,8 +77,7 @@ public class MayorUtils {
 		loadMayorPerkOverrides();
 
 		CompletableFuture.supplyAsync(() -> {
-			// Old URL: https://hysky.de/api/skyblock/election
-			try (Http.ApiResponse response = Http.sendCacheableGetRequest("https://api.hypixel.net/v2/resources/skyblock/election", null)) {
+			try (Http.ApiResponse response = Http.sendCacheableGetRequest("https://hysky.de/api/skyblock/election", null)) {
 				if (!response.ok()) {
 					throw new RuntimeException("Received bad http response: " + response.statusCode() + " " + response.content());
 				}

@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -33,7 +33,7 @@ import net.minecraft.network.chat.Component;
 public class ConfigBackupScreen extends Screen {
 	private static final Logger LOGGER = LogUtils.getLogger();
 
-	private final Screen parent;
+	private final @Nullable Screen parent;
 	private BackupListWidget listWidget;
 	private SettingsListWidget detailsWidget;
 
@@ -71,7 +71,6 @@ public class ConfigBackupScreen extends Screen {
 		Button restoreBtn = Button.builder(Component.translatable("skyblocker.config.general.backup.restore"), b -> {
 			Path selected = listWidget.getSelectedPath();
 			if (selected != null) {
-				assert minecraft != null;
 				minecraft.setScreen(new ConfirmScreen(confirm -> {
 					if (confirm) {
 						try {
@@ -109,7 +108,6 @@ public class ConfigBackupScreen extends Screen {
 
 	@Override
 	public void onClose() {
-		assert minecraft != null;
 		minecraft.setScreen(parent);
 	}
 
@@ -156,9 +154,9 @@ public class ConfigBackupScreen extends Screen {
 		}
 
 		@Override
-		public void renderContent(GuiGraphics context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
-			context.drawCenteredString(font, path.getFileName().toString(), this.getContentXMiddle(), this.getY() + 7, 0xFFFFFFFF);
-			if (isMouseOver(mouseX, mouseY)) context.requestCursor(CursorTypes.POINTING_HAND);
+		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+			graphics.centeredText(font, path.getFileName().toString(), this.getContentXMiddle(), this.getY() + 7, 0xFFFFFFFF);
+			if (isMouseOver(mouseX, mouseY)) graphics.requestCursor(CursorTypes.POINTING_HAND);
 		}
 
 		@Override
@@ -250,8 +248,8 @@ public class ConfigBackupScreen extends Screen {
 		}
 
 		@Override
-		protected void renderScrollbar(GuiGraphics context, int mouseX, int mouseY) {
-			super.renderScrollbar(context, mouseX, mouseY);
+		protected void extractScrollbar(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+			super.extractScrollbar(graphics, mouseX, mouseY);
 			if (scrollbarVisible()) {
 				int scrollBarX = scrollBarX();
 				int listWidgetY = getY();
@@ -265,7 +263,7 @@ public class ConfigBackupScreen extends Screen {
 						// height - scrollbarThumbHeight - 2 because we draw a two pixel high indicator.
 						// scrollbarThumbHeight thumb height calculations so the changed line is in view when the indicator is in the middle of the scrollbar thumb.
 						int barY = entryY * (height - scrollbarThumbHeight - 2) / (totalHeight - defaultEntryHeight) + listWidgetY + scrollbarThumbHeight / 2;
-						context.fill(scrollBarX, barY, scrollBarX + 6, barY + 2, 0xFFFFFF55);
+						graphics.fill(scrollBarX, barY, scrollBarX + 6, barY + 2, 0xFFFFFF55);
 					}
 				}
 			}
@@ -292,12 +290,12 @@ public class ConfigBackupScreen extends Screen {
 		}
 
 		@Override
-		public void renderContent(GuiGraphics context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
 			int color = 0xFFFFFFFF;
 			if (path != null && changedPaths.contains(path)) {
 				color = 0xFFFFFF55;
 			}
-			context.drawString(font, text, this.getX() + 2, this.getY() + 2, color, false);
+			graphics.text(font, text, this.getX() + 2, this.getY() + 2, color, false);
 		}
 	}
 }

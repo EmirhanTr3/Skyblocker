@@ -1,9 +1,11 @@
 package de.hysky.skyblocker.skyblock.item;
 
 import de.hysky.skyblocker.SkyblockerMod;
-import de.hysky.skyblocker.skyblock.itemlist.recipebook.SkyblockRecipeBookWidget;
+import de.hysky.skyblocker.skyblock.itemlist.recipebook.SkyblockRecipeBookComponent;
 import java.time.Duration;
-import net.minecraft.client.gui.GuiGraphics;
+
+import de.hysky.skyblocker.utils.render.texture.FallbackedTexture;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
@@ -20,7 +22,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class SkyblockCraftingTableScreen extends AbstractContainerScreen<SkyblockCraftingTableScreenHandler> {
-	private static final Identifier TEXTURE = Identifier.withDefaultNamespace("textures/gui/container/crafting_table.png");
+	private static final FallbackedTexture<Identifier> TEXTURE = FallbackedTexture.ofTexture(
+			SkyblockerMod.id("textures/gui/container/skyblock_crafting_table.png"),
+			Identifier.withDefaultNamespace("textures/gui/container/crafting_table.png"));
+	private static final FallbackedTexture<Identifier> MIRRORVERSE_TEXTURE = FallbackedTexture.ofTexture(
+			SkyblockerMod.id("textures/gui/container/skyblock_crafting_table_mirroverse.png"),
+			Identifier.withDefaultNamespace("textures/gui/container/crafting_table.png"));
 	protected static final WidgetSprites MORE_CRAFTS_TEXTURES = new WidgetSprites(
 			SkyblockerMod.id("quick_craft/more_button"),
 			SkyblockerMod.id("quick_craft/more_button_disabled"),
@@ -28,7 +35,7 @@ public class SkyblockCraftingTableScreen extends AbstractContainerScreen<Skybloc
 	);
 
 	protected static final Identifier QUICK_CRAFT = SkyblockerMod.id("textures/gui/sprites/quick_craft/quick_craft_overlay.png");
-	private final SkyblockRecipeBookWidget recipeBook = new SkyblockRecipeBookWidget(menu);
+	private final SkyblockRecipeBookComponent recipeBook = new SkyblockRecipeBookComponent(menu);
 	private boolean narrow;
 	private ImageButton moreCraftsButton;
 
@@ -55,7 +62,7 @@ public class SkyblockCraftingTableScreen extends AbstractContainerScreen<Skybloc
 			moreCraftsButton.setTooltip(Tooltip.create(Component.literal("More Crafts")));
 			this.addRenderableWidget(moreCraftsButton);
 		}
-		assert (minecraft != null ? minecraft.player : null) != null;
+		assert minecraft.player != null;
 		this.addWidget(this.recipeBook);
 		this.setInitialFocus(this.recipeBook);
 		this.titleLabelX = 29;
@@ -71,34 +78,34 @@ public class SkyblockCraftingTableScreen extends AbstractContainerScreen<Skybloc
 	}
 
 	@Override
-	public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 		if (this.recipeBook.isVisible() && this.narrow) {
-			this.renderBackground(context, mouseX, mouseY, delta);
-			this.recipeBook.render(context, mouseX, mouseY, delta);
+			this.extractBackground(graphics, mouseX, mouseY, delta);
+			this.recipeBook.extractRenderState(graphics, mouseX, mouseY, delta);
 		} else {
-			super.render(context, mouseX, mouseY, delta);
-			this.recipeBook.render(context, mouseX, mouseY, delta);
-			this.recipeBook.renderGhostRecipe(context, true);
+			super.extractRenderState(graphics, mouseX, mouseY, delta);
+			this.recipeBook.extractRenderState(graphics, mouseX, mouseY, delta);
+			this.recipeBook.renderGhostRecipe(graphics, true);
 		}
-		this.renderTooltip(context, mouseX, mouseY);
-		this.recipeBook.renderTooltip(context, mouseX, mouseY, null);
+		this.renderTooltip(graphics, mouseX, mouseY);
+		this.recipeBook.renderTooltip(graphics, mouseX, mouseY, null);
 	}
 
 	@Override
-	protected void renderSlot(GuiGraphics context, Slot slot, int mouseX, int mouseY) {
+	protected void renderSlot(GuiGraphicsExtractor graphics, Slot slot, int mouseX, int mouseY) {
 		ItemStack stack = slot.getItem();
 		if (slot.index == 23 && stack.is(Items.BARRIER)) return;
 		if (stack.is(Items.GRAY_STAINED_GLASS_PANE) && stack.getSkyblockId().isEmpty()) return;
-		super.renderSlot(context, slot, mouseX, mouseY);
+		super.renderSlot(graphics, slot, mouseX, mouseY);
 	}
 
 	@Override
-	protected void renderBg(GuiGraphics context, float delta, int mouseX, int mouseY) {
+	protected void renderBg(GuiGraphicsExtractor graphics, float delta, int mouseX, int mouseY) {
 		int i = this.leftPos;
 		int j = (this.height - this.imageHeight) / 2;
-		context.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, i, j, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
+		graphics.blit(RenderPipelines.GUI_TEXTURED, menu.mirrorverse ? MIRRORVERSE_TEXTURE.get() : TEXTURE.get(), i, j, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
 		//4 px of margin to allow some space for custom resource packs that have size differences on the crafting table/inventory textures
-		if (!menu.mirrorverse) context.blit(RenderPipelines.GUI_TEXTURED, QUICK_CRAFT, i + 143, j - 3, 0, 0, 37, 90, 37, 90);
+		if (TEXTURE.isUsingFallback() && !menu.mirrorverse) graphics.blit(RenderPipelines.GUI_TEXTURED, QUICK_CRAFT, i + 143, j - 3, 0, 0, 37, 90, 37, 90);
 	}
 
 	@Override

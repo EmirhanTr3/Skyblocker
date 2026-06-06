@@ -1,8 +1,10 @@
 package de.hysky.skyblocker.skyblock.searchoverlay;
 
+import de.hysky.skyblocker.SkyblockerMod;
 import de.hysky.skyblocker.config.SkyblockerConfigManager;
+import de.hysky.skyblocker.utils.render.texture.FallbackedTexture;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
@@ -23,7 +25,9 @@ public class OverlayScreen extends Screen {
 
 	protected static final Identifier SEARCH_ICON_TEXTURE = Identifier.withDefaultNamespace("icon/search");
 	protected static final Identifier DELETE_ICON_TEXTURE = Identifier.withDefaultNamespace("textures/gui/sprites/pending_invite/reject.png");
-	private static final Identifier BACKGROUND_TEXTURE = Identifier.withDefaultNamespace("social_interactions/background");
+	private static final FallbackedTexture<Identifier> BACKGROUND_TEXTURE = FallbackedTexture.ofGuiSprite(
+			SkyblockerMod.id("search_overlay/background"),
+			Identifier.withDefaultNamespace("social_interactions/background"));
 	private static final int rowHeight = 20;
 	private static final int specialButtonSize = rowHeight;
 	private EditBox searchField;
@@ -212,54 +216,54 @@ public class OverlayScreen extends Screen {
 	 * @param delta delta
 	 */
 	@Override
-	public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
-		super.renderBackground(context, mouseX, mouseY, delta);
+	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		super.extractBackground(graphics, mouseX, mouseY, delta);
 		//find max height
 		int maxHeight = rowHeight * (1 + suggestionButtons.length + historyButtons.length);
 		if (historyButtons.length > 0) { //add space for history label if it could exist
 			maxHeight += (int) (rowHeight * 0.75);
 		}
-		context.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_TEXTURE, searchField.getX() - 8, searchField.getY() - 8, (int) (this.width * 0.4) + 16, maxHeight + 16);
+		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_TEXTURE.get(), searchField.getX() - 8, searchField.getY() - 8, (int) (this.width * 0.4) + 16, maxHeight + 16);
 	}
 
 	/**
 	 * Renders the search icon, label for the history and item Stacks for item names
 	 */
 	@Override
-	public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-		super.render(context, mouseX, mouseY, delta);
+	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		super.extractRenderState(graphics, mouseX, mouseY, delta);
 		int renderOffset = (rowHeight - 16) / 2;
-		context.blitSprite(RenderPipelines.GUI_TEXTURED, SEARCH_ICON_TEXTURE, finishedButton.getX() + renderOffset, finishedButton.getY() + renderOffset, 16, 16);
+		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SEARCH_ICON_TEXTURE, finishedButton.getX() + renderOffset, finishedButton.getY() + renderOffset, 16, 16);
 		if (historyButtons.length > 0 && historyButtons[0] != null) {
-			context.drawString(font, Component.translatable("skyblocker.config.general.searchOverlay.historyLabel"), historyButtons[0].getX() + renderOffset, historyButtons[0].getY() - rowHeight / 2, 0xFFFFFFFF, true);
+			graphics.text(font, Component.translatable("skyblocker.config.general.searchOverlay.historyLabel"), historyButtons[0].getX() + renderOffset, historyButtons[0].getY() - rowHeight / 2, 0xFFFFFFFF, true);
 		}
 
 		//draw item stacks and tooltip to buttons
 		for (int i = 0; i < suggestionButtons.length; i++) {
-			drawItemAndTooltip(context, mouseX, mouseY, SearchOverManager.getSuggestionId(i), suggestionButtons[i], renderOffset);
+			drawItemAndTooltip(graphics, mouseX, mouseY, SearchOverManager.getSuggestionId(i), suggestionButtons[i], renderOffset);
 		}
 		for (int i = 0; i < historyButtons.length; i++) {
-			drawItemAndTooltip(context, mouseX, mouseY, SearchOverManager.getHistoryId(i), historyButtons[i], renderOffset);
+			drawItemAndTooltip(graphics, mouseX, mouseY, SearchOverManager.getHistoryId(i), historyButtons[i], renderOffset);
 		}
 
 		for (Button deleteButton : deleteButtons) {
 			if (!deleteButton.visible) break;
-			context.blit(RenderPipelines.GUI_TEXTURED, DELETE_ICON_TEXTURE, deleteButton.getX() + renderOffset, deleteButton.getY() + renderOffset, 0, 0, 16, 16, 16, 16);
+			graphics.blit(RenderPipelines.GUI_TEXTURED, DELETE_ICON_TEXTURE, deleteButton.getX() + renderOffset, deleteButton.getY() + renderOffset, 0, 0, 16, 16, 16, 16);
 		}
 	}
 
 	/**
 	 * Draws the item and tooltip for the given button
 	 */
-	private void drawItemAndTooltip(GuiGraphics context, int mouseX, int mouseY, String id, Button button, int renderOffset) {
+	private void drawItemAndTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY, String id, Button button, int renderOffset) {
 		if (id.isEmpty()) return;
 		ItemStack item = getItemStack(id);
 		if (item == null) return;
-		context.renderItem(item, button.getX() + renderOffset, button.getY() + renderOffset);
+		graphics.item(item, button.getX() + renderOffset, button.getY() + renderOffset);
 
 		// Draw tooltip
 		if (button.isMouseOver(mouseX, mouseY)) {
-			context.setTooltipForNextFrame(font, item, mouseX, mouseY);
+			graphics.setTooltipForNextFrame(font, item, mouseX, mouseY);
 		}
 	}
 

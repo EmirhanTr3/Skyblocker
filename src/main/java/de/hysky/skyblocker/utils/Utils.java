@@ -34,8 +34,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
@@ -46,6 +44,7 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +68,6 @@ public class Utils {
 	public static final String PROFILE_ID_PREFIX = "Profile ID: ";
 	private static final String PROFILE_ID_SUGGEST_PREFIX = "CLICK THIS TO SUGGEST IT IN CHAT";
 	private static final Pattern PURSE = Pattern.compile("(Purse|Piggy): (?<purse>[0-9,.]+)( \\((?<change>[+\\-][0-9,.]+)\\))?");
-	private static final HolderLookup.Provider LOOKUP = VanillaRegistries.createLookup();
 	private static boolean isOnHypixel = false;
 	private static boolean isOnSkyblock = false;
 
@@ -194,6 +192,11 @@ public class Utils {
 	 */
 	public static Location getLocation() {
 		return location;
+	}
+
+	@VisibleForTesting
+	public static void setTestLocation(Location located) {
+		location = located;
 	}
 
 	/**
@@ -561,6 +564,7 @@ public class Utils {
 			} else if (message.startsWith(PROFILE_ID_PREFIX)) {
 				String prevProfileId = profileId;
 				profileId = message.substring(PROFILE_ID_PREFIX.length());
+				if (Utils.getEnvironment() != Environment.PRODUCTION) profileId += "-alpha";
 				profileIdRequest++;
 
 				if (!prevProfileId.equals(profileId)) {
@@ -596,15 +600,6 @@ public class Utils {
 
 	public static String getUndashedUuid() {
 		return UndashedUuid.toString(getUuid());
-	}
-
-	/**
-	 * Tries to get the dynamic registry manager instance currently in use or else returns {@link #LOOKUP}
-	 */
-	public static HolderLookup.Provider getRegistryWrapperLookup() {
-		Minecraft client = Minecraft.getInstance();
-		// Null check on client for tests
-		return client != null && client.getConnection() != null && client.getConnection().registryAccess() != null ? client.getConnection().registryAccess() : LOOKUP;
 	}
 
 	/**

@@ -4,9 +4,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import de.hysky.skyblocker.config.SkyblockerConfigManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -51,6 +53,7 @@ import de.hysky.skyblocker.utils.waypoint.WaypointGroup;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import it.unimi.dsi.fastutil.ints.IntConsumer;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import org.jspecify.annotations.Nullable;
 
 public class WaypointsListWidget extends ContainerObjectSelectionList<WaypointsListWidget.AbstractWaypointEntry> {
 	private static final Identifier DELETE_ICON = SkyblockerMod.id("trash_can");
@@ -61,7 +64,7 @@ public class WaypointsListWidget extends ContainerObjectSelectionList<WaypointsL
 	private final AbstractWaypointsScreen<?> screen;
 	private Location island;
 	private List<WaypointGroup> waypoints;
-	private InsertPosition insertPosition = null;
+	private @Nullable InsertPosition insertPosition = null;
 	private final Set<WaypointGroup> collapsedGroups = new ReferenceOpenHashSet<>(); // use identity hash code
 
 	public WaypointsListWidget(Minecraft client, AbstractWaypointsScreen<?> screen, int width, int height, int y, int itemHeight) {
@@ -110,8 +113,8 @@ public class WaypointsListWidget extends ContainerObjectSelectionList<WaypointsL
 	}
 
 	@Override
-	protected void renderListItems(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
-		super.renderListItems(context, mouseX, mouseY, deltaTicks);
+	protected void renderListItems(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
+		super.renderListItems(graphics, mouseX, mouseY, deltaTicks);
 		insertPosition = null;
 		int insertButtonY;
 		int position;
@@ -132,7 +135,7 @@ public class WaypointsListWidget extends ContainerObjectSelectionList<WaypointsL
 						groupEntry = waypointGroupEntry;
 						position = 0;
 					}
-					case null, default -> {
+					default -> {
 						return;
 					}
 				}
@@ -187,11 +190,11 @@ public class WaypointsListWidget extends ContainerObjectSelectionList<WaypointsL
 		int mX = mouseX - getRowLeft();
 		if (insertButtonY <= getY() || insertButtonY >= getBottom() || mX > 32) return;
 		boolean hovering = isMouseOver(mouseX, mouseY) && Math.abs(mouseY - insertButtonY) <= 6 && mX < 16 && mX >= -8;
-		context.blitSprite(RenderPipelines.GUI_TEXTURED, hovering ? INSERT_HIGHLIGHTED_TEXTURE : INSERT_TEXTURE, getRowLeft(), insertButtonY - 5, 48, 11);
-		if (Debug.debugEnabled()) context.drawString(minecraft.font, String.valueOf(position), getX(), getY(), -1, true);
+		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, hovering ? INSERT_HIGHLIGHTED_TEXTURE : INSERT_TEXTURE, getRowLeft(), insertButtonY - 5, 48, 11);
+		if (Debug.debugEnabled()) graphics.text(minecraft.font, String.valueOf(position), getX(), getY(), -1, true);
 		if (hovering) {
 			insertPosition = new InsertPosition(groupEntry, position);
-			context.requestCursor(CursorTypes.POINTING_HAND);
+			graphics.requestCursor(CursorTypes.POINTING_HAND);
 		}
 	}
 
@@ -207,6 +210,7 @@ public class WaypointsListWidget extends ContainerObjectSelectionList<WaypointsL
 
 	void updateEntries() {
 		clearEntries();
+		checkAndAddWarning();
 		for (WaypointGroup group : waypoints) {
 			boolean collapsed = collapsedGroups.contains(group);
 			WaypointGroupEntry groupEntry = new WaypointGroupEntry(group, collapsed);
@@ -228,11 +232,40 @@ public class WaypointsListWidget extends ContainerObjectSelectionList<WaypointsL
 		}
 	}
 
+	void checkAndAddWarning() {
+		if (!SkyblockerConfigManager.get().uiAndVisuals.waypoints.enableWaypoints) {
+			addEntryToTop(new WaypointsDisabledWarningEntry());
+		}
+	}
+
 	private BlockPos getDefaultPos() {
 		return minecraft.hitResult instanceof BlockHitResult blockHitResult && minecraft.hitResult.getType() == HitResult.Type.BLOCK ? blockHitResult.getBlockPos() : minecraft.player != null ? minecraft.player.blockPosition() : BlockPos.ZERO;
 	}
 
 	protected abstract static class AbstractWaypointEntry extends ContainerObjectSelectionList.Entry<AbstractWaypointEntry> {
+	}
+
+	protected class WaypointsDisabledWarningEntry extends AbstractWaypointEntry {
+		Component text = Component.translatable("skyblocker.waypoints.disabledWarning").withStyle(ChatFormatting.RED);
+		StringWidget textWidget = new StringWidget(text, minecraft.font);
+		int textSize = minecraft.font.width(text);
+		List<AbstractWidget> children = List.of(textWidget);
+
+		@Override
+		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+			textWidget.setPosition(getX() + (getRowWidth() - textSize) / 2, getY() + (getHeight() - minecraft.font.lineHeight) / 2);
+			textWidget.extractRenderState(graphics, mouseX, mouseY, a);
+		}
+
+		@Override
+		public List<? extends GuiEventListener> children() {
+			return children;
+		}
+
+		@Override
+		public List<? extends NarratableEntry> narratables() {
+			return children;
+		}
 	}
 
 	protected class WaypointGroupEntry extends AbstractWaypointEntry {
@@ -372,10 +405,10 @@ public class WaypointsListWidget extends ContainerObjectSelectionList<WaypointsL
 		}
 
 		@Override
-		public void renderContent(GuiGraphics context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
 			layout.setPosition(this.getX(), this.getY());
 			for (AbstractWidget child : children) {
-				child.render(context, mouseX, mouseY, deltaTicks);
+				child.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
 			}
 		}
 	}
@@ -547,13 +580,13 @@ public class WaypointsListWidget extends ContainerObjectSelectionList<WaypointsL
 		}
 
 		@Override
-		public void renderContent(GuiGraphics context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
 			layout.setPosition(this.getX(), this.getY());
 			boolean showButtons = hovered && mouseY >= buttonUp.getY() - 1 && mouseY <= buttonUp.getBottom();
 			buttonUp.visible = showButtons;
 			buttonDown.visible = showButtons;
 			for (AbstractWidget child : children) {
-				child.render(context, mouseX, mouseY, deltaTicks);
+				child.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
 			}
 		}
 	}
@@ -582,13 +615,13 @@ public class WaypointsListWidget extends ContainerObjectSelectionList<WaypointsL
 		}
 
 		@Override
-		protected void renderContents(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+		protected void renderContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
 			int padding = 1;
-			context.fill(getX() + padding, getY() + padding, getRight() - padding, getBottom() - padding, isHovered() ? CommonColors.WHITE : CommonColors.BLACK);
-			context.fill(getX() + padding + 1, getY() + padding + 1, getRight() - padding - 1, getBottom() - padding - 1, this.color);
+			graphics.fill(getX() + padding, getY() + padding, getRight() - padding, getBottom() - padding, isHovered() ? CommonColors.WHITE : CommonColors.BLACK);
+			graphics.fill(getX() + padding + 1, getY() + padding + 1, getRight() - padding - 1, getBottom() - padding - 1, this.color);
 
 			if (this.isHovered()) {
-				context.requestCursor(CursorTypes.POINTING_HAND);
+				graphics.requestCursor(CursorTypes.POINTING_HAND);
 			}
 		}
 

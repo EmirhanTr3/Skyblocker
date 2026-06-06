@@ -5,14 +5,14 @@ import com.google.common.collect.MultimapBuilder;
 import com.mojang.blaze3d.platform.cursor.CursorType;
 import de.hysky.skyblocker.utils.Location;
 import de.hysky.skyblocker.utils.Utils;
-import de.hysky.skyblocker.utils.render.HudHelper;
+import de.hysky.skyblocker.utils.render.GuiHelper;
 import de.hysky.skyblocker.utils.render.gui.DropdownWidget;
 import de.hysky.skyblocker.utils.waypoint.NamedWaypoint;
 import de.hysky.skyblocker.utils.waypoint.WaypointGroup;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -208,16 +208,16 @@ public abstract class AbstractWaypointsScreen<T extends Screen> extends Screen {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
 			// Set the cursor to default to prevent widgets from below taking over the shape when they cannot be interacted with
 			if (this.isHovered()) {
-				context.requestCursor(CursorType.DEFAULT);
+				graphics.requestCursor(CursorType.DEFAULT);
 			}
 
-			context.fill(getX(), getY(), getRight(), getBottom(), ARGB.color(0.6f, 0));
-			HudHelper.drawBorder(context, getX(), getY(), getWidth(), getHeight(), CommonColors.WHITE);
+			graphics.fill(getX(), getY(), getRight(), getBottom(), ARGB.color(0.6f, 0));
+			GuiHelper.drawBorder(graphics, getX(), getY(), getWidth(), getHeight(), CommonColors.WHITE);
 			for (AbstractWidget child : children) {
-				child.render(context, mouseX, mouseY, deltaTicks);
+				child.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
 			}
 			if (!isFocused() &&
 					(mouseX <= getX() - 50 || mouseX >= getRight() + 50 || mouseY <= getY() - 50 || mouseY >= getBottom() + 50)) visible = false;

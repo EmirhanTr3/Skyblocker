@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
@@ -55,12 +55,12 @@ public class JacobMedalBackground extends ColoredItemBackground<Integer> {
 	}
 
 	@Override
-	protected void draw(GuiGraphics context, int x, int y, Integer color) {
+	protected void draw(GuiGraphicsExtractor graphics, int x, int y, Integer color) {
 		float r = ((color >> 16) & 0xFF) / 255F;
 		float g = ((color >> 8) & 0xFF) / 255F;
 		float b = (color & 0xFF) / 255F;
 
-		context.blitSprite(RenderPipelines.GUI_TEXTURED, getSprite(), x, y, 16, 16,
+		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, getSprite(), x, y, 16, 16,
 				ARGB.colorFromFloat(
 						SkyblockerConfigManager.get().general.itemInfoDisplay.itemBackgroundOpacity,
 						r, g, b

@@ -5,7 +5,7 @@ import de.hysky.skyblocker.skyblock.tabhud.config.WidgetsListTab;
 import de.hysky.skyblocker.utils.ItemUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -45,7 +45,7 @@ public class WidgetSlotEntry extends WidgetsListSlotEntry {
 	}
 
 	@Override
-	public void renderTooltip(GuiGraphics context, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY) {
+	public void renderTooltip(GuiGraphicsExtractor graphics, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY) {
 		if (mouseX >= x && mouseX <= x + entryWidth - 110 && mouseY >= y && mouseY <= y + entryHeight) {
 			@SuppressWarnings("deprecation")
 			List<Component> lore = ItemUtils.getLore(icon);
@@ -54,7 +54,7 @@ public class WidgetSlotEntry extends WidgetsListSlotEntry {
 			} else if (state != State.LOCKED) {
 				lore = lore.subList(0, Math.max(lore.size() - 3, 0));
 			}
-			context.setComponentTooltipForNextFrame(Minecraft.getInstance().font, lore, mouseX, mouseY);
+			graphics.setComponentTooltipForNextFrame(Minecraft.getInstance().font, lore, mouseX, mouseY);
 		}
 	}
 
@@ -64,21 +64,21 @@ public class WidgetSlotEntry extends WidgetsListSlotEntry {
 	}
 
 	@Override
-	public void renderContent(GuiGraphics context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+	public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
 		int textY = this.getY() + (this.getHeight() - 9) / 2;
 		Font textRenderer = Minecraft.getInstance().font;
-		renderIconAndText(context, this.getY(), this.getX(), this.getHeight());
+		renderIconAndText(graphics, this.getY(), this.getX(), this.getHeight());
 		if (state != State.LOCKED) {
 
 			editButton.setPosition(this.getX() + this.getWidth() - 40, this.getY() + (this.getHeight() - 12) / 2);
-			editButton.render(context, mouseX, mouseY, deltaTicks);
+			editButton.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
 
 			if (!alwaysEnabled) {
 				enableButton.setPosition(this.getX() + this.getWidth() - 110, this.getY() + (this.getHeight() - 12) / 2);
-				enableButton.render(context, mouseX, mouseY, deltaTicks);
+				enableButton.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
 			}
 		} else {
-			context.drawString(textRenderer, "LOCKED", this.getX() + this.getWidth() - 50, textY, CommonColors.RED, true);
+			graphics.text(textRenderer, "LOCKED", this.getX() + this.getWidth() - 50, textY, CommonColors.RED, true);
 		}
 	}
 

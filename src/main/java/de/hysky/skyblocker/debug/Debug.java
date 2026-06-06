@@ -13,7 +13,7 @@ import de.hysky.skyblocker.mixins.accessors.GuiInvoker;
 import de.hysky.skyblocker.skyblock.events.EventNotifications;
 import de.hysky.skyblocker.utils.Constants;
 import de.hysky.skyblocker.utils.ItemUtils;
-import de.hysky.skyblocker.utils.Utils;
+import de.hysky.skyblocker.utils.RegistryUtils;
 import de.hysky.skyblocker.utils.networth.NetworthCalculator;
 import net.azureaaron.networth.Calculation;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -85,6 +85,9 @@ public class Debug {
 						.then(dumpBiome())
 						.then(dumpActionBar())
 						.then(auditMixins())
+						.then(prefixTest())
+						.then(apiId())
+						.then(neuName())
 				)
 		));
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -93,7 +96,7 @@ public class Debug {
 				client.level.getEntities(client.player, client.player.getBoundingBox().inflate(SkyblockerConfigManager.get().debug.dumpRange))
 						.stream()
 						.map(entity -> {
-							TagValueOutput writeView = TagValueOutput.createWithContext(new ProblemReporter.ScopedCollector(LOGGER), Utils.getRegistryWrapperLookup());
+							TagValueOutput writeView = TagValueOutput.createWithContext(new ProblemReporter.ScopedCollector(LOGGER), RegistryUtils.getRegistryWrapperLookup());
 							entity.saveWithoutId(writeView);
 
 							return writeView.buildResult();
@@ -188,7 +191,7 @@ public class Debug {
 					Component actionBar = ((GuiInvoker) (source.getClient().gui)).getOverlayMessageString();
 
 					if (actionBar != null) {
-						Component pretty = NbtUtils.toPrettyComponent(ComponentSerialization.CODEC.encodeStart(Utils.getRegistryWrapperLookup().createSerializationContext(NbtOps.INSTANCE), actionBar).getOrThrow());
+						Component pretty = NbtUtils.toPrettyComponent(ComponentSerialization.CODEC.encodeStart(RegistryUtils.getRegistryWrapperLookup().createSerializationContext(NbtOps.INSTANCE), actionBar).getOrThrow());
 						source.sendFeedback(Constants.PREFIX.get().append("Action Bar: ").append(pretty));
 					}
 
@@ -205,11 +208,35 @@ public class Debug {
 				});
 	}
 
+	private static LiteralArgumentBuilder<FabricClientCommandSource> prefixTest() {
+		return literal("prefixTest")
+				.executes(context -> {
+					context.getSource().sendFeedback(Constants.PREFIX.get());
+					return Command.SINGLE_SUCCESS;
+				});
+	}
+
+	private static LiteralArgumentBuilder<FabricClientCommandSource> apiId() {
+		return literal("apiId")
+				.executes(context -> {
+					context.getSource().sendFeedback(Constants.PREFIX.get().append("Item API ID: " + context.getSource().getPlayer().getMainHandItem().getSkyblockApiId()));
+					return Command.SINGLE_SUCCESS;
+				});
+	}
+
+	private static LiteralArgumentBuilder<FabricClientCommandSource> neuName() {
+		return literal("neuName")
+				.executes(context -> {
+					context.getSource().sendFeedback(Constants.PREFIX.get().append("Item NEU Name: " + context.getSource().getPlayer().getMainHandItem().getNeuName()));
+					return Command.SINGLE_SUCCESS;
+				});
+	}
+
 	public enum DumpFormat {
 		JSON {
 			@Override
 			public Component format(ItemStack stack) {
-				return Component.literal(SkyblockerMod.GSON_COMPACT.toJson(ItemUtils.EMPTY_ALLOWING_ITEMSTACK_CODEC.encodeStart(Utils.getRegistryWrapperLookup().createSerializationContext(JsonOps.INSTANCE), stack).getOrThrow()));
+				return Component.literal(SkyblockerMod.GSON_COMPACT.toJson(ItemUtils.EMPTY_ALLOWING_ITEMSTACK_CODEC.encodeStart(RegistryUtils.getRegistryWrapperLookup().createSerializationContext(JsonOps.INSTANCE), stack).getOrThrow()));
 			}
 		},
 		SNBT {

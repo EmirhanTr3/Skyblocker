@@ -7,13 +7,14 @@ import de.hysky.skyblocker.mixins.accessors.AbstractContainerScreenAccessor;
 import de.hysky.skyblocker.mixins.accessors.PopupScreenAccessor;
 import de.hysky.skyblocker.utils.Constants;
 import de.hysky.skyblocker.utils.render.gui.AbstractPopupScreen;
+import de.hysky.skyblocker.utils.render.texture.FallbackedTexture;
 import de.hysky.skyblocker.utils.scheduler.MessageScheduler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.PopupScreen;
 import net.minecraft.client.gui.components.Tooltip;
@@ -36,6 +37,10 @@ import org.jspecify.annotations.Nullable;
 @Environment(value = EnvType.CLIENT)
 public class QuickNavButton extends AbstractWidget {
 	private static final long TOGGLE_DURATION = 1000;
+	@SuppressWarnings("unchecked")
+	private static final @Nullable FallbackedTexture<Identifier>[] TAB_TEXTURES = new FallbackedTexture[14];
+	@SuppressWarnings("unchecked")
+	private static final @Nullable FallbackedTexture<Identifier>[] TAB_TEXTURES_SELECTED = new FallbackedTexture[14];
 
 	private final int index;
 	private final boolean toggled;
@@ -165,7 +170,7 @@ public class QuickNavButton extends AbstractWidget {
 	 * @param mouseY  the y-coordinate of the mouse cursor
 	 */
 	@Override
-	public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 		this.updateCoordinates();
 
 		// Note that this changes the return value of `toggled()`, so do not call it after this point.
@@ -178,16 +183,26 @@ public class QuickNavButton extends AbstractWidget {
 			alpha = Math.min(alpha + 10, 255);
 		}
 
-		// Construct the texture identifier based on the index and toggled state
-		Identifier tabTexture = Identifier.withDefaultNamespace("container/creative_inventory/tab_" + (isTopTab() ? "top" : "bottom") + "_" + (renderInFront ? "selected" : "unselected") + "_" + (index % 7 + 1));
+		Identifier tabTexture = getTexture();
 
 		// Render the button texture, always with full alpha if it's not rendering in front
-		context.blitSprite(RenderPipelines.GUI_TEXTURED, tabTexture, this.getX(), this.getY(), this.width, this.height, renderInFront ? ARGB.color(alpha, -1) : -1);
+		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, tabTexture, this.getX(), this.getY(), this.width, this.height, renderInFront ? ARGB.color(alpha, -1) : -1);
 		// Render the button icon
 		int yOffset = this.index < 7 ? 1 : -1;
-		context.renderItem(this.icon, this.getX() + 5, this.getY() + 8 + yOffset);
+		graphics.item(this.icon, this.getX() + 5, this.getY() + 8 + yOffset);
 
-		this.handleCursor(context);
+		this.handleCursor(graphics);
+	}
+
+	private Identifier getTexture() {
+		var textures = renderInFront ? TAB_TEXTURES_SELECTED : TAB_TEXTURES;
+		FallbackedTexture<Identifier> texture = textures[index];
+		if (texture != null) return texture.get();
+		// Construct the texture identifier based on the index and toggled state
+		return (textures[index] = FallbackedTexture.ofGuiSprite(
+				SkyblockerMod.id("quick_nav/tab_" + (isTopTab() ? "top" : "bottom") + "_" + (renderInFront ? "selected" : "unselected") + "_" + (index % 7 + 1)),
+				Identifier.withDefaultNamespace("container/creative_inventory/tab_" + (isTopTab() ? "top" : "bottom") + "_" + (renderInFront ? "selected" : "unselected") + "_" + (index % 7 + 1))
+		)).get();
 	}
 
 	@Override

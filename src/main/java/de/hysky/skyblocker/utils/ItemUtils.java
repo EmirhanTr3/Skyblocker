@@ -22,7 +22,7 @@ import de.hysky.skyblocker.skyblock.item.tooltip.adders.CraftPriceTooltip;
 import de.hysky.skyblocker.skyblock.item.tooltip.adders.ObtainedDateTooltip;
 import de.hysky.skyblocker.skyblock.item.tooltip.info.TooltipInfoType;
 import de.hysky.skyblocker.utils.networth.NetworthCalculator;
-import io.github.moulberry.repo.data.NEUItem;
+import io.github.moulberry.repo.util.NEUId;
 import it.unimi.dsi.fastutil.doubles.DoubleBooleanPair;
 import it.unimi.dsi.fastutil.ints.IntIntPair;
 import it.unimi.dsi.fastutil.longs.LongBooleanPair;
@@ -94,7 +94,7 @@ public final class ItemUtils {
 
 	public static LiteralArgumentBuilder<FabricClientCommandSource> dumpHeldItemCommand() {
 		return literal("dumpHeldItem").executes(context -> {
-			context.getSource().sendFeedback(Component.literal("[Skyblocker Debug] Held Item: " + SkyblockerMod.GSON_COMPACT.toJson(ItemStack.CODEC.encodeStart(Utils.getRegistryWrapperLookup().createSerializationContext(JsonOps.INSTANCE), context.getSource().getPlayer().getMainHandItem()).getOrThrow())));
+			context.getSource().sendFeedback(Component.literal("[Skyblocker Debug] Held Item: " + SkyblockerMod.GSON_COMPACT.toJson(ItemStack.CODEC.encodeStart(RegistryUtils.getRegistryWrapperLookup().createSerializationContext(JsonOps.INSTANCE), context.getSource().getPlayer().getMainHandItem()).getOrThrow())));
 			return Command.SINGLE_SUCCESS;
 		});
 	}
@@ -201,9 +201,9 @@ public final class ItemUtils {
 				}
 			}
 			case "POTION" -> {
-				String enhanced = customData.contains("enhanced") ? "_ENHANCED" : "";
-				String extended = customData.contains("extended") ? "_EXTENDED" : "";
-				String splash = customData.contains("splash") ? "_SPLASH" : "";
+				String enhanced = customData.getBooleanOr("enhanced", false) ? "_ENHANCED" : "";
+				String extended = customData.getBooleanOr("extended", false) ? "_EXTENDED" : "";
+				String splash = customData.getBooleanOr("splash", false) ? "_SPLASH" : "";
 				if (customData.contains("potion") && customData.contains("potion_level")) {
 					return (customData.getStringOr("potion", "") + "_" + id + "_" + customData.getIntOr("potion_level", 0)
 							+ enhanced + extended + splash).toUpperCase(Locale.ENGLISH);
@@ -248,6 +248,22 @@ public final class ItemUtils {
 					List<Component> lines = lore.lines();
 					if (lines.size() < 3) return id;
 					return EnchantedBookUtils.getApiIdByName(lines.get(2));
+				}
+
+				if (currentScreen instanceof ContainerScreen container && container.getTitle().getString().endsWith("Experimentation Table RNG")) {
+					Component stackName = itemStack.getOrDefault(DataComponents.CUSTOM_NAME, Component.empty());
+					return switch (stackName.getString()) {
+							case "Titanic Experience Bottle" -> "TITANIC_EXP_BOTTLE";
+							case "Grand Experience Bottle" -> "GRAND_EXP_BOTTLE";
+							default -> EnchantedBookUtils.getApiIdByName(stackName);
+					};
+				}
+
+				if (currentScreen instanceof ContainerScreen container && container.getTitle().getString().equals("Attribute Menu")) {
+					Component stackName = itemStack.getOrDefault(DataComponents.CUSTOM_NAME, Component.empty());
+					Attribute attribute = Attributes.getAttributeFromAbilityName(stackName.getString());
+					if (attribute != null) return attribute.apiId();
+					return id;
 				}
 
 				if (itemStack instanceof ItemStack realStack && itemStack.has(DataComponents.CUSTOM_NAME)) {
@@ -307,6 +323,30 @@ public final class ItemUtils {
 		};
 	}
 
+	public static @NEUId String getNeuIdFromApiId(String apiId) {
+		// Pets
+		if (apiId.startsWith("LVL_")) {
+			String[] parts = apiId.split("_", 4);
+			if (parts.length != 4) return apiId;
+			Optional<SkyblockItemRarity> rarity = SkyblockItemRarity.containsName(parts[2]);
+			//noinspection OptionalIsPresent
+			if (rarity.isEmpty()) return apiId;
+			return parts[3] + ";" + rarity.get().ordinal() + "+" + parts[1];
+		}
+
+		// Potions
+		if (apiId.contains("_POTION_")) {
+			String[] parts = apiId.split("_POTION_", 2);
+			if (parts.length != 2) return apiId;
+			String potionName = parts[0];
+			parts = parts[1].split("_", 2);
+			String potionLevel = parts[0];
+			return "POTION_" + potionName + ";" + potionLevel;
+		}
+
+		return apiId;
+	}
+
 	/**
 	 * Parses the {@code petInfo} field from a pet item that has it into the {@link PetInfo} record.
 	 *
@@ -346,10 +386,17 @@ public final class ItemUtils {
 	}
 
 	/**
-	 * @see #getItemPrice(String, boolean)
+	 * @see #getItemPrice(String, boolean, boolean)
 	 */
 	public static DoubleBooleanPair getItemPrice(@Nullable String skyblockApiId) {
 		return getItemPrice(skyblockApiId, false);
+	}
+
+	/**
+	 * @see #getItemPrice(String, boolean, boolean)
+	 */
+	public static DoubleBooleanPair getItemPrice(@Nullable String skyblockApiId, boolean useBazaarBuyPrice)  {
+		return getItemPrice(skyblockApiId, useBazaarBuyPrice, false);
 	}
 
 	/**
@@ -358,32 +405,33 @@ public final class ItemUtils {
 	 * @return An {@link LongBooleanPair} with the {@code left long} representing the item's price,
 	 * and the {@code right boolean} indicating if the price was based on complete data.
 	 */
-	public static DoubleBooleanPair getItemPrice(@Nullable String skyblockApiId, boolean useBazaarBuyPrice) {
+	public static DoubleBooleanPair getItemPrice(@Nullable String skyblockApiId, boolean useBazaarBuyPrice, boolean useAuctionAverage) {
 		Object2ObjectMap<String, BazaarProduct> bazaarPrices = TooltipInfoType.BAZAAR.getData();
+		Object2DoubleMap<String> threeDayAveragePrices = TooltipInfoType.THREE_DAY_AVERAGE.getData();
 		Object2DoubleMap<String> lowestBinPrices = TooltipInfoType.LOWEST_BINS.getData();
 
-		if (skyblockApiId == null || skyblockApiId.isEmpty() || bazaarPrices == null || lowestBinPrices == null) return DoubleBooleanPair.of(0, false);
+		if (skyblockApiId == null || skyblockApiId.isEmpty()) return DoubleBooleanPair.of(0, false);
 
-		if (bazaarPrices.containsKey(skyblockApiId)) {
+		if (bazaarPrices != null && bazaarPrices.containsKey(skyblockApiId)) {
 			BazaarProduct product = bazaarPrices.get(skyblockApiId);
 			OptionalDouble price = useBazaarBuyPrice ? product.buyPrice() : product.sellPrice();
 
 			return DoubleBooleanPair.of(price.orElse(0d), price.isPresent());
 		}
 
-		if (lowestBinPrices.containsKey(skyblockApiId)) {
+		if (useAuctionAverage && threeDayAveragePrices != null && threeDayAveragePrices.containsKey(skyblockApiId)) {
+			return DoubleBooleanPair.of(threeDayAveragePrices.getDouble(skyblockApiId), true);
+		}
+
+		if (lowestBinPrices != null && lowestBinPrices.containsKey(skyblockApiId)) {
 			return DoubleBooleanPair.of(lowestBinPrices.getDouble(skyblockApiId), true);
 		}
 
 		return DoubleBooleanPair.of(0, false);
 	}
 
-	public static double getCraftCost(String skyblockApiId) {
-		NEUItem neuItem = NEURepoManager.getItemByNeuId(skyblockApiId);
-		if (neuItem != null && !neuItem.getRecipes().isEmpty()) {
-			return CraftPriceTooltip.getItemCost(neuItem.getRecipes().getFirst(), 0);
-		}
-		return 0;
+	public static double getCraftCost(String neuId) {
+		return CraftPriceTooltip.getItemCost(neuId);
 	}
 
 	/**
@@ -411,7 +459,7 @@ public final class ItemUtils {
 
 	public static boolean hasCustomDurability(ItemStack stack) {
 		CompoundTag customData = getCustomData(stack);
-		return !customData.isEmpty() && (customData.contains("drill_fuel") || customData.getStringOr(ID, "").equals("PICKONIMBUS"));
+		return !customData.isEmpty() && (customData.contains("drill_fuel") || stack.getSkyblockId().equals("PICKONIMBUS"));
 	}
 
 	public static @Nullable IntIntPair getDurability(ItemStack stack) {
@@ -550,6 +598,10 @@ public final class ItemUtils {
 		return createSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHBzOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzJkZGQ4OWE2YWU5NTdmNzY2ZDMwMDAxMWZmNDQ3MTQ4MWMzYmI2MWI2NzYwNzhhOGM2YzNjNDA4MzIwMWI1YzIifX19");
 	}
 
+	public static ItemStack getSkyblockerKatStack() {
+		return createSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZWFhZTgxMjc3NTcwNmI1NjU5NjY4MzQ4NmFiZWFmODU3ZWExYzA2OGNiMzRhOGJjMWRlOWE1N2M2MzhjZjQxMSIsIm1ldGFkYXRhIjp7fX19LCJwcm9maWxlSWQiOiIzNjYwYWEzNzBiYjAyZjk1YTQwNTRmNTVmODlhYTI5ZCIsInByb2ZpbGVOYW1lIjoibmVhODkiLCJpc1B1YmxpYyI6dHJ1ZSwidGltZXN0YW1wIjoxNzcxOTU3MjE2NDE4fQ==");
+	}
+
 	/**
 	 * Utility method.
 	 */
@@ -661,8 +713,12 @@ public final class ItemUtils {
 	 */
 	public static OptionalInt getItemCountInSuperpairs(ItemStack stack) {
 		Screen currentScreen = Minecraft.getInstance().screen;
-		if (currentScreen instanceof ContainerScreen container && container.getTitle().getString().startsWith("Superpairs")) {
-			if (stack.getHoverName().getString().contains("Enchanted Book")) return OptionalInt.of(1);
+		if (currentScreen instanceof ContainerScreen container) {
+			if (container.getTitle().getString().startsWith("Superpairs")) {
+				if (stack.getHoverName().getString().contains("Enchanted Book")) return OptionalInt.of(1);
+			} else if (container.getTitle().getString().endsWith("Experimentation Table RNG")) {
+				return OptionalInt.of(1);
+			}
 		}
 		return OptionalInt.empty();
 	}

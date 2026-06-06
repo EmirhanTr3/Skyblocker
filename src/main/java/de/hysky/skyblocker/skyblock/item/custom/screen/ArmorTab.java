@@ -10,8 +10,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.GuiGraphics.HoveredTextEffects;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphicsExtractor.HoveredTextEffects;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.StringWidget;
@@ -31,6 +31,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -61,6 +62,11 @@ public class ArmorTab extends GridLayoutTab implements Closeable {
 
 		@Override
 		public void onEquipItem(EquipmentSlot slot, ItemStack oldStack, ItemStack newStack) {}
+
+		@Override
+		public boolean isModelPartShown(PlayerModelPart modelPart) {
+			return modelPart != PlayerModelPart.CAPE && CLIENT.options.isModelPartEnabled(modelPart);
+		}
 	};
 
 	public ArmorTab(CustomizeScreen parent) {
@@ -181,8 +187,8 @@ public class ArmorTab extends GridLayoutTab implements Closeable {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
-			context.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_TEXTURE, getX() + 1, getY() + 1, 82, 22);
+		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_TEXTURE, getX() + 1, getY() + 1, 82, 22);
 
 			int hoveredSlot = -1;
 			int localX = mouseX - getX() - 2;
@@ -193,17 +199,17 @@ public class ArmorTab extends GridLayoutTab implements Closeable {
 
 			if (hoveredSlot >= 0 && selectable[hoveredSlot]) {
 				int i = getX() + 2 + hoveredSlot * 20;
-				context.fill(i, getY() + 2, i + 20, getY() + 22, 0x20_FF_FF_FF);
+				graphics.fill(i, getY() + 2, i + 20, getY() + 22, 0x20_FF_FF_FF);
 			}
 
 			for (int i = 0; i < armor.length; i++) {
-				context.renderItem(armor[i], getX() + 4 + i * 20, getY() + 4);
+				graphics.item(armor[i], getX() + 4 + i * 20, getY() + 4);
 				if (!selectable[i] && !armor[i].isEmpty()) {
-					context.renderItem(BARRIER, getX() + 4 + i * 20, getY() + 4);
+					graphics.item(BARRIER, getX() + 4 + i * 20, getY() + 4);
 				}
 			}
-			context.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_SELECTION_TEXTURE, getX() + selectedSlot * 20, getY(), 24, 24);
-			this.handleCursor(context);
+			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_SELECTION_TEXTURE, getX() + selectedSlot * 20, getY(), 24, 24);
+			this.handleCursor(graphics);
 		}
 
 		@Override
@@ -287,17 +293,17 @@ public class ArmorTab extends GridLayoutTab implements Closeable {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
 			if (!visible) return;
-			context.blitSprite(RenderPipelines.GUI_TEXTURED,
+			graphics.blitSprite(RenderPipelines.GUI_TEXTURED,
 					INNER_SPACE_TEXTURE,
 					getX(),
 					getY(),
 					getWidth(),
 					getHeight()
 			);
-			this.field.render(context, mouseX, mouseY, deltaTicks);
-			this.drawLabel(context.textRenderer(HoveredTextEffects.NONE));
+			this.field.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+			this.drawLabel(graphics.textRenderer(HoveredTextEffects.NONE));
 		}
 
 		private void drawLabel(ActiveTextCollector drawer) {

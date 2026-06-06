@@ -144,7 +144,6 @@
     "skyblocker.config.crimsonIsle.kuudra.pearlWaypoints": "엔더 진주 웨이포인트",
     "skyblocker.config.dungeons.devices": "디바이스 솔버(F7/M7)",
     "skyblocker.config.dungeons.classBasedPlayerGlow": "클래스별 플레이어 발광",
-    "key.skyblocker.wikiLookup.fandom": "팬덤(비공식) 위키 검색",
     "skyblocker.config.dungeons.classBasedPlayerGlow.@Tooltip": "팀원들의 발광 색을 랭크 대신 클래스로 바꿉니다.",
     "skyblocker.config.dungeons.goldorWaypoints.waypointType": "태스크 웨이포인트 종류",
     "skyblocker.config.dungeons.dungeonChestProfit.includeEssence": "에센스 포함",
@@ -180,7 +179,6 @@
     "skyblocker.config.dungeons.devices.solveArrowAlign": "Arrow Align 해결",
     "skyblocker.config.dungeons.devices.solveArrowAlign.@Tooltip": "각 화살의 남은 회전 횟수를 보여줍니다.",
     "skyblocker.config.dungeons.princeMessage": "Prince 메시지",
-    "skyblocker.config.farming.garden": "정원",
     "skyblocker.config.dungeons.mimicMessage": "Mimic 메시지",
     "skyblocker.config.dungeons.map": "지도",
     "skyblocker.config.dungeons.spiritLeapOverlay.leapMessage": "Leap 메시지",
@@ -234,5 +232,9 @@
     "skyblocker.config.chat.chatRules.screen.ruleScreen.locations": "위치 수정",
     "skyblocker.config.chat.chatRules.screen.ruleScreen.outputs": "출력",
     "skyblocker.config.chat.chatRules.screen.ruleScreen.sounds": "소리",
-    "skyblocker.config.chat.chatRules.screen.ruleScreen.regex": "정규 표현식"
+    "skyblocker.config.chat.chatRules.screen.ruleScreen.regex": "정규 표현식",
+    "skyblocker.config.chat.chatRules.screen.ruleScreen.name": "이름",
+    "skyblocker.config.chat.chatRules.screen.ruleScreen.sounds.none": "무",
+    "skyblocker.config.chat.chatRules.screen.ruleScreen.sounds.zombie": "좀비",
+    "skyblocker.config.chat.filter": "필터"
 }

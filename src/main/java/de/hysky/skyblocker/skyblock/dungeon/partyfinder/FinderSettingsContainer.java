@@ -3,7 +3,7 @@ package de.hysky.skyblocker.skyblock.dungeon.partyfinder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -15,16 +15,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 
+import org.jspecify.annotations.Nullable;
+
 public class FinderSettingsContainer extends AbstractContainerWidget {
 	private boolean isInitialized = false;
-	private OptionDropdownWidget floorSelector;
-	private OptionDropdownWidget dungeonTypeSelector;
-	private OptionDropdownWidget sortGroupsSelector;
+	private @Nullable OptionDropdownWidget floorSelector;
+	private @Nullable OptionDropdownWidget dungeonTypeSelector;
+	private @Nullable OptionDropdownWidget sortGroupsSelector;
 
-	private RangedValueWidget classLevelRange;
-	private RangedValueWidget dungeonLevelRange;
+	private @Nullable RangedValueWidget classLevelRange;
+	private @Nullable RangedValueWidget dungeonLevelRange;
 
-	private AbstractContainerWidget currentlyOpenedOption = null;
+	private @Nullable AbstractContainerWidget currentlyOpenedOption = null;
 
 	private final List<AbstractContainerWidget> initializedWidgets = new ArrayList<>();
 
@@ -219,7 +221,8 @@ public class FinderSettingsContainer extends AbstractContainerWidget {
 		return true;
 	}
 
-	private void updateDropdownOptionWidget(ChestMenu handler, OptionDropdownWidget dropdownWidget) {
+	private void updateDropdownOptionWidget(ChestMenu handler, @Nullable OptionDropdownWidget dropdownWidget) {
+		if (dropdownWidget == null) return;
 		currentlyOpenedOption = dropdownWidget;
 		List<OptionDropdownWidget.Option> entries = new ArrayList<>();
 		for (Slot slot : handler.slots) {
@@ -232,7 +235,8 @@ public class FinderSettingsContainer extends AbstractContainerWidget {
 		dropdownWidget.open(entries, backId);
 	}
 
-	private void updateRangedValue(ChestMenu handler, RangedValueWidget valueWidget) {
+	private void updateRangedValue(ChestMenu handler, @Nullable RangedValueWidget valueWidget) {
+		if (valueWidget == null) return;
 		currentlyOpenedOption = valueWidget;
 		int min = -1;
 		int max = -1;
@@ -275,15 +279,15 @@ public class FinderSettingsContainer extends AbstractContainerWidget {
 	}
 
 	@Override
-	protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 		if (!visible || !isInitialized) return;
-		this.classLevelRange.render(context, mouseX, mouseY, delta);
-		this.dungeonLevelRange.render(context, mouseX, mouseY, delta);
+		if (this.classLevelRange != null) this.classLevelRange.extractRenderState(graphics, mouseX, mouseY, delta);
+		if (this.dungeonLevelRange != null) this.dungeonLevelRange.extractRenderState(graphics, mouseX, mouseY, delta);
 
 		// Render the dropdowns last to fix overlap issue.
-		this.sortGroupsSelector.render(context, mouseX, mouseY, delta);
-		this.floorSelector.render(context, mouseX, mouseY, delta);
-		this.dungeonTypeSelector.render(context, mouseX, mouseY, delta);
+		if (this.sortGroupsSelector != null) this.sortGroupsSelector.extractRenderState(graphics, mouseX, mouseY, delta);
+		if (this.floorSelector != null) this.floorSelector.extractRenderState(graphics, mouseX, mouseY, delta);
+		if (this.dungeonTypeSelector != null) this.dungeonTypeSelector.extractRenderState(graphics, mouseX, mouseY, delta);
 	}
 
 	@Override

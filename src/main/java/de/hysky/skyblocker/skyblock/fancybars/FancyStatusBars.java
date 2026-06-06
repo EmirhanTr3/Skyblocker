@@ -17,7 +17,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.Identifier;
@@ -360,18 +360,18 @@ public class FancyStatusBars {
 		return SkyblockerConfigManager.get().uiAndVisuals.bars.enableBars && (!Utils.isInTheRift() || SkyblockerConfigManager.get().uiAndVisuals.bars.enableBarsRift);
 	}
 
-	public static boolean render(GuiGraphics context, Minecraft client) {
+	public static boolean render(GuiGraphicsExtractor graphics, Minecraft client) {
 		LocalPlayer player = client.player;
 		if (!isEnabled() || player == null) return false;
 
 		Collection<StatusBar> barCollection = statusBars.values();
 		for (StatusBar statusBar : barCollection) {
 			if (!statusBar.enabled || !statusBar.visible) continue;
-			statusBar.renderBar(context);
+			statusBar.renderBar(graphics);
 		}
 		for (StatusBar statusBar : barCollection) {
 			if (!statusBar.enabled || !statusBar.visible) continue;
-			statusBar.renderText(context);
+			statusBar.renderText(graphics);
 		}
 
 		if (Utils.isInTheRift()) {
