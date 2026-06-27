@@ -3,7 +3,7 @@ package de.hysky.skyblocker.skyblock.profileviewer2.utils;
 import java.util.List;
 
 import de.hysky.skyblocker.skyblock.tabhud.util.Ico;
-import net.minecraft.world.item.ItemStack;
+import de.hysky.skyblocker.utils.FlexibleItemStack;
 
 public enum Skill {
 	ALCHEMY("Alchemy", 50, Ico.BREWING_STAND),
@@ -25,13 +25,13 @@ public enum Skill {
 	private final String name;
 	private final int baseCap;
 	private final int absoluteCap;
-	private final ItemStack icon;
+	private final FlexibleItemStack icon;
 
-	Skill(String name, int baseCap, ItemStack icon) {
+	Skill(String name, int baseCap, FlexibleItemStack icon) {
 		this(name, baseCap, baseCap, icon);
 	}
 
-	Skill(String name, int baseCap, int absoluteCap, ItemStack icon) {
+	Skill(String name, int baseCap, int absoluteCap, FlexibleItemStack icon) {
 		this.name = name;
 		this.baseCap = baseCap;
 		this.absoluteCap = absoluteCap;
@@ -50,7 +50,7 @@ public enum Skill {
 		return this.absoluteCap;
 	}
 
-	public ItemStack getIcon() {
+	public FlexibleItemStack getIcon() {
 		return this.icon;
 	}
 }

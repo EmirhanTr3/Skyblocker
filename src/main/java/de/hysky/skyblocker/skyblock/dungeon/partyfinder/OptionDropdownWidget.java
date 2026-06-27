@@ -6,7 +6,6 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.GuiGraphicsExtractor.HoveredTextEffects;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -77,9 +76,9 @@ public class OptionDropdownWidget extends AbstractSelectionList<OptionDropdownWi
 	protected void updateWidgetNarration(NarrationElementOutput builder) {}
 
 	@Override
-	public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		if (isOpen) {
-			if (animationProgress < 1) animationProgress += delta * 0.5f;
+			if (animationProgress < 1) animationProgress += a * 0.5f;
 			else if (animationProgress != 1) animationProgress = 1;
 		} else {
 			animationProgress = 0;
@@ -97,15 +96,15 @@ public class OptionDropdownWidget extends AbstractSelectionList<OptionDropdownWi
 			graphics.fill(getX() + 1, header.getY() + header.getHeight() + 1, getX() + getWidth() - 2, header.getY() + openedListHeight + header.getHeight() - 1, CommonColors.BLACK);
 		}
 
-		super.renderWidget(graphics, mouseX, mouseY, delta);
+		super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
 	}
 
 	@Override
-	protected void renderListSeparators(GuiGraphicsExtractor graphics) {
+	protected void extractListSeparators(GuiGraphicsExtractor graphics) {
 	}
 
 	@Override
-	protected void renderListBackground(GuiGraphicsExtractor graphics) {
+	protected void extractListBackground(GuiGraphicsExtractor graphics) {
 	}
 
 	public void open(List<Option> entries, int backButtonId) {
@@ -150,7 +149,7 @@ public class OptionDropdownWidget extends AbstractSelectionList<OptionDropdownWi
 		}
 
 		@Override
-		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
 			int x = this.getX();
 			int y = this.getY();
 			graphics.text(Minecraft.getInstance().font, name, x, y + 1, 0xFFD0D0D0, false);
@@ -176,7 +175,7 @@ public class OptionDropdownWidget extends AbstractSelectionList<OptionDropdownWi
 		}
 
 		@Override
-		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
 			Matrix3x2fStack matrices = graphics.pose();
 			matrices.pushMatrix();
 			int iconY = this.getY() + 1;
@@ -189,7 +188,7 @@ public class OptionDropdownWidget extends AbstractSelectionList<OptionDropdownWi
 			if (PartyFinderScreen.DEBUG) graphics.text(minecraft.font, String.valueOf(optionSlotId), this.getX() + 8, this.getY(), CommonColors.RED, true);
 			MutableComponent text = Component.literal(message).withStyle(Style.EMPTY.withUnderlined(hovered));
 			if (minecraft.font.width(text) >= this.getWidth() - 14) {
-				graphics.textRenderer(HoveredTextEffects.NONE).acceptScrollingWithDefaultCenter(text, this.getX() + 14, this.getX() + this.getWidth(), getY() + 3, this.getY() + 3 + minecraft.font.lineHeight);
+				graphics.textRenderer(GuiGraphicsExtractor.HoveredTextEffects.NONE).acceptScrollingWithDefaultCenter(text, this.getX() + 14, this.getX() + this.getWidth(), getY() + 3, this.getY() + 3 + minecraft.font.lineHeight);
 			} else {
 				graphics.text(minecraft.font, text, this.getX() + 14, this.getY() + 3, CommonColors.WHITE, false);
 			}

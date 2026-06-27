@@ -47,8 +47,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 public class MythologicalRitual {
 	private static final Pattern GRIFFIN_BURROW_DUG = Pattern.compile("(?<message>You dug out a Griffin Burrow!|You finished the Griffin burrow chain!) \\((?<index>\\d+)/(?<length>\\d+)\\)");
@@ -68,9 +68,9 @@ public class MythologicalRitual {
 		UseBlockCallback.EVENT.register(MythologicalRitual::onUseBlock);
 		UseItemCallback.EVENT.register(MythologicalRitual::onUseItem);
 		ClientReceiveMessageEvents.ALLOW_GAME.register(MythologicalRitual::onChatMessage);
-		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> reset());
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal(SkyblockerMod.NAMESPACE).then(literal("diana")
-				.then(literal("clearGriffinBurrows").executes(context -> {
+		ClientPlayConnectionEvents.JOIN.register((_, _, _) -> reset());
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> dispatcher.register(literal(SkyblockerMod.NAMESPACE).then(literal("diana")
+				.then(literal("clearGriffinBurrows").executes(_ -> {
 					reset();
 					return Command.SINGLE_SUCCESS;
 				}))
@@ -223,10 +223,10 @@ public class MythologicalRitual {
 				}
 				if (burrow.confirmed != TriState.FALSE) {
 					if (burrow.nextBurrowLine != null) {
-						collector.submitLinesFromPoints(burrow.nextBurrowLine, ORANGE_COLOR_COMPONENTS, 0.5F, 5F, false);
+						collector.submitLinesFromPoints(burrow.nextBurrowLine, ORANGE_COLOR_COMPONENTS, 0.5f, 5f, false);
 					}
 					if (burrow.echoBurrowLine != null) {
-						collector.submitLinesFromPoints(burrow.echoBurrowLine, ORANGE_COLOR_COMPONENTS, 0.5F, 5F, false);
+						collector.submitLinesFromPoints(burrow.echoBurrowLine, ORANGE_COLOR_COMPONENTS, 0.5f, 5f, false);
 					}
 					if (burrow.nextBurrowEstimatedPos != null && burrow.confirmed == TriState.DEFAULT) {
 						collector.submitFilledBoxWithBeaconBeam(burrow.nextBurrowEstimatedPos, RED_COLOR_COMPONENTS, 0.5f, true);
@@ -313,7 +313,7 @@ public class MythologicalRitual {
 		private @Nullable Line echoBurrowLineEstimation;
 
 		private GriffinBurrow(BlockPos pos) {
-			super(pos, Type.WAYPOINT, ORANGE_COLOR_COMPONENTS, 0.25F);
+			super(pos, Type.WAYPOINT, ORANGE_COLOR_COMPONENTS, 0.25f);
 		}
 
 		private void init() {

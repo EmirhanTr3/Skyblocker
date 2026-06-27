@@ -31,7 +31,7 @@ public class DungeonHeaderWidget {
 				avg += LevelFinder.getLevelInfo("Catacombs", CLASS_DATA.getAsJsonObject(element.toLowerCase(Locale.ENGLISH)).get("experience").getAsLong()).level;
 			}
 			classAvg = avg/classes.length;
-		}  catch (Exception ignored) {
+		}  catch (Exception _) {
 			this.classLevel = LevelFinder.getLevelInfo("", 0);
 			classAvg = 0;
 		}
@@ -39,9 +39,7 @@ public class DungeonHeaderWidget {
 
 	public void extractRenderState(GuiGraphicsExtractor graphics, int x, int y) {
 		graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0, 0, 109, 26, 109, 26);
-
 		graphics.text(textRenderer, "§i§6§lCatacombs §r" + this.classLevel.level, x + 3, y + 4, Color.WHITE.getRGB(), true);
-
 		graphics.text(textRenderer, "§eClass Average §r" + DF.format(this.classAvg), x + 3, y + 14, Color.WHITE.getRGB(), true);
 	}
 }

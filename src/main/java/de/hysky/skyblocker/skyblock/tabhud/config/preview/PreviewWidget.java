@@ -57,7 +57,7 @@ public class PreviewWidget extends AbstractWidget {
 	}
 
 	@Override
-	protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 		hoveredWidget = null;
 		float scale = SkyblockerConfigManager.get().uiAndVisuals.tabHud.tabHudScale / 100.f;
 		scaledRatio = ratio * scale;
@@ -65,14 +65,14 @@ public class PreviewWidget extends AbstractWidget {
 		scaledScreenHeight = tab.parent.height / scale;
 
 		ScreenBuilder screenBuilder = WidgetManager.getScreenBuilder(tab.getCurrentLocation());
-		GuiHelper.drawBorder(graphics, getX() - 1, getY() - 1, getWidth() + 2, getHeight() + 2, -1);
+		GuiHelper.border(graphics, getX() - 1, getY() - 1, getWidth() + 2, getHeight() + 2, -1);
 		graphics.enableScissor(getX(), getY(), getRight(), getBottom());
 		Matrix3x2fStack matrices = graphics.pose();
 		matrices.pushMatrix();
 		matrices.translate(getX(), getY());
 		matrices.scale(scaledRatio, scaledRatio);
 
-		screenBuilder.renderWidgets(graphics, tab.getCurrentScreenLayer());
+		screenBuilder.extractWidgetsRenderState(graphics, tab.getCurrentScreenLayer());
 
 		float localMouseX = (mouseX - getX()) / scaledRatio;
 		float localMouseY = (mouseY - getY()) / scaledRatio;
@@ -88,7 +88,7 @@ public class PreviewWidget extends AbstractWidget {
 
 		// HOVERED
 		if (hoveredWidget != null && !hoveredWidget.equals(selectedWidget)) {
-			GuiHelper.drawBorder(
+			GuiHelper.border(
 					graphics,
 					hoveredWidget.getX() - 1,
 					hoveredWidget.getY() - 1,
@@ -100,7 +100,7 @@ public class PreviewWidget extends AbstractWidget {
 		// SELECTED
 		if (selectedWidget != null) {
 			//noinspection DataFlowIssue
-			GuiHelper.drawBorder(
+			GuiHelper.border(
 					graphics,
 					selectedWidget.getX() - 1,
 					selectedWidget.getY() - 1,
@@ -123,11 +123,10 @@ public class PreviewWidget extends AbstractWidget {
 				int translatedX = Math.min(thisAnchorX - rule.relativeX() - deltaX, (int) scaledScreenWidth - 2);
 				int translatedY = Math.min(thisAnchorY - rule.relativeY() - deltaY, (int) scaledScreenHeight - 2);
 
-				renderUnits(graphics, rule, deltaX, deltaY, thisAnchorX, thisAnchorY, translatedX, translatedY);
+				extractUnits(graphics, rule, deltaX, deltaY, thisAnchorX, thisAnchorY, translatedX, translatedY);
 
 				graphics.horizontalLine(translatedX, thisAnchorX, thisAnchorY + 1, 0xAAAA0000);
 				graphics.verticalLine(translatedX + 1, translatedY, thisAnchorY, 0xAAAA0000);
-
 
 				graphics.horizontalLine(translatedX, thisAnchorX, thisAnchorY, CommonColors.RED);
 				graphics.verticalLine(translatedX, translatedY, thisAnchorY, CommonColors.RED);
@@ -138,12 +137,12 @@ public class PreviewWidget extends AbstractWidget {
 		matrices.pushMatrix();
 		matrices.translate(getX(), getY());
 		matrices.scale(ratio, ratio);
-		((GuiInvoker) Minecraft.getInstance().gui).skyblocker$renderSidebar(graphics, tab.placeHolderObjective);
+		((GuiInvoker) Minecraft.getInstance().gui).extractSidebar(graphics, tab.placeHolderObjective);
 		matrices.popMatrix();
 		graphics.disableScissor();
 	}
 
-	private void renderUnits(GuiGraphicsExtractor graphics, PositionRule rule, int deltaX, int deltaY, int thisAnchorX, int thisAnchorY, int translatedX, int translatedY) {
+	private void extractUnits(GuiGraphicsExtractor graphics, PositionRule rule, int deltaX, int deltaY, int thisAnchorX, int thisAnchorY, int translatedX, int translatedY) {
 		boolean xUnitOnTop = rule.relativeY() > 0;
 		if (xUnitOnTop && thisAnchorY < 10) xUnitOnTop = false;
 		if (!xUnitOnTop && thisAnchorY > scaledScreenHeight - 10) xUnitOnTop = true;
@@ -163,7 +162,7 @@ public class PreviewWidget extends AbstractWidget {
 			graphics.text(tab.client.font, text, textX, 2, CommonColors.RED);
 		}
 		// X
-		graphics.centeredText(tab.client.font, xUnitText, thisAnchorX - (xUnit) / 2, xUnitOnTop ? thisAnchorY - 9 : thisAnchorY + 2, CommonColors.SOFT_RED);
+		graphics.text(tab.client.font, xUnitText, thisAnchorX - (xUnit) / 2, xUnitOnTop ? thisAnchorY - 9 : thisAnchorY + 2, CommonColors.SOFT_RED);
 		// Y
 		graphics.text(tab.client.font, yUnitText, yUnitOnRight ? translatedX + 2 : translatedX - 1 - yUnitTextWidth, thisAnchorY - (yUnit - 9) / 2, CommonColors.SOFT_RED, true);
 	}

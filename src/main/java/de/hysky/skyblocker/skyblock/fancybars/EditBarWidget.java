@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
+import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -44,7 +45,7 @@ public class EditBarWidget extends AbstractContainerWidget {
 	private int contentsWidth = 0;
 
 	public EditBarWidget(int x, int y, Screen parent) {
-		super(x, y, 100, 99, Component.literal("Edit bar"));
+		super(x, y, 100, 99, Component.literal("Edit bar"), AbstractScrollArea.defaultSettings(4));
 
 		Font textRenderer = Minecraft.getInstance().font;
 
@@ -97,7 +98,7 @@ public class EditBarWidget extends AbstractContainerWidget {
 	public int insideMouseY = 0;
 
 	@Override
-	protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		if (isHovered()) {
 			insideMouseX = mouseX;
 			insideMouseY = mouseY;
@@ -109,9 +110,9 @@ public class EditBarWidget extends AbstractContainerWidget {
 		Matrix3x2fStack matrices = graphics.pose();
 		matrices.pushMatrix();
 		matrices.translate(getX(), getY());
-		TooltipRenderUtil.renderTooltipBackground(graphics, 0, 0, getWidth(), getHeight(), null);
-		nameWidget.extractRenderState(graphics, mouseX, mouseY, delta);
-		for (AbstractWidget option : options) option.extractRenderState(graphics, mouseX - getX(), mouseY - getY(), delta);
+		TooltipRenderUtil.extractTooltipBackground(graphics, 0, 0, getWidth(), getHeight(), null);
+		nameWidget.extractRenderState(graphics, mouseX, mouseY, a);
+		for (AbstractWidget option : options) option.extractRenderState(graphics, mouseX - getX(), mouseY - getY(), a);
 		matrices.popMatrix();
 	}
 
@@ -186,7 +187,7 @@ public class EditBarWidget extends AbstractContainerWidget {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 			if (isMouseOver(mouseX, mouseY)) {
 				graphics.fill(getX(), getY(), getRight(), getBottom(), 0x20FFFFFF);
 			}
@@ -218,7 +219,7 @@ public class EditBarWidget extends AbstractContainerWidget {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 			if (isMouseOver(mouseX, mouseY)) {
 				graphics.fill(getX(), getY(), getRight(), getBottom(), 0x20FFFFFF);
 			}
@@ -267,13 +268,13 @@ public class EditBarWidget extends AbstractContainerWidget {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 			if (isMouseOver(mouseX, mouseY)) {
 				graphics.fill(getX(), getY(), getRight(), getBottom(), 0x20FFFFFF);
 			}
 			Font textRenderer = Minecraft.getInstance().font;
 			graphics.text(textRenderer, getMessage(), getX() + 1, getY() + 1, active ? -1 : CommonColors.GRAY, true);
-			GuiHelper.drawBorder(graphics, getRight() - 10, getY() + 1, 9, 9, active ? -1 : CommonColors.GRAY);
+			GuiHelper.border(graphics, getRight() - 10, getY() + 1, 9, 9, active ? -1 : CommonColors.GRAY);
 			if (current && active) graphics.fill(getRight() - 8, getY() + 3, getRight() - 3, getY() + 8, CommonColors.WHITE);
 		}
 
@@ -313,13 +314,13 @@ public class EditBarWidget extends AbstractContainerWidget {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 			if (isMouseOver(mouseX, mouseY)) {
 				graphics.fill(getX(), getY(), getRight(), getBottom(), 0x20FFFFFF);
 			}
 			Font textRenderer = Minecraft.getInstance().font;
 			graphics.text(textRenderer, getMessage(), getX() + 1, getY() + 1, active ? -1 : CommonColors.GRAY, true);
-			GuiHelper.drawBorder(graphics, getRight() - 10, getY() + 1, 9, 9, active ? -1 : CommonColors.GRAY);
+			GuiHelper.border(graphics, getRight() - 10, getY() + 1, 9, 9, active ? -1 : CommonColors.GRAY);
 			graphics.fill(getRight() - 8, getY() + 3, getRight() - 3, getY() + 8, active ? current : CommonColors.GRAY);
 		}
 

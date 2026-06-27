@@ -5,7 +5,7 @@ import de.hysky.skyblocker.annotations.Init;
 import de.hysky.skyblocker.config.SkyblockerConfigManager;
 import de.hysky.skyblocker.config.configs.UIAndVisualsConfig;
 import de.hysky.skyblocker.utils.scheduler.Scheduler;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
@@ -38,10 +38,10 @@ public class TitleContainer {
 
 	@Init
 	public static void init() {
-		HudElementRegistry.attachElementAfter(VanillaHudElements.TITLE_AND_SUBTITLE, TITLE_CONTAINER, TitleContainer::extractRenderState);
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(ClientCommandManager.literal("skyblocker")
-				.then(ClientCommandManager.literal("hud")
-						.then(ClientCommandManager.literal("titleContainer")
+		HudElementRegistry.attachElementAfter(VanillaHudElements.TITLE_AND_SUBTITLE, TITLE_CONTAINER, TitleContainer::render);
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> dispatcher.register(ClientCommands.literal("skyblocker")
+				.then(ClientCommands.literal("hud")
+						.then(ClientCommands.literal("titleContainer")
 								.executes(Scheduler.queueOpenScreenCommand(TitleContainerConfigScreen::new))))));
 	}
 
@@ -130,11 +130,11 @@ public class TitleContainer {
 		titles.remove(title);
 	}
 
-	private static void extractRenderState(GuiGraphicsExtractor graphics, DeltaTracker tickCounter) {
-		extractRenderState(graphics, titles, SkyblockerConfigManager.get().uiAndVisuals.titleContainer.x, SkyblockerConfigManager.get().uiAndVisuals.titleContainer.y, tickCounter.getGameTimeDeltaPartialTick(true));
+	private static void render(GuiGraphicsExtractor graphics, DeltaTracker tickCounter) {
+		render(graphics, titles, SkyblockerConfigManager.get().uiAndVisuals.titleContainer.x, SkyblockerConfigManager.get().uiAndVisuals.titleContainer.y, tickCounter.getGameTimeDeltaPartialTick(true));
 	}
 
-	protected static void extractRenderState(GuiGraphicsExtractor graphics, Set<Title> titles, int xPos, int yPos, float tickDelta) {
+	protected static void render(GuiGraphicsExtractor graphics, Set<Title> titles, int xPos, int yPos, float tickDelta) {
 		UIAndVisualsConfig.TitleContainer config = SkyblockerConfigManager.get().uiAndVisuals.titleContainer;
 
 		// Calculate Scale to use
@@ -143,10 +143,10 @@ public class TitleContainer {
 		UIAndVisualsConfig.Direction direction = config.direction;
 		UIAndVisualsConfig.Alignment alignment = config.alignment;
 
-		extractRenderState(graphics, titles, xPos, yPos, tickDelta, scale, direction, alignment);
+		render(graphics, titles, xPos, yPos, tickDelta, scale, direction, alignment);
 	}
 
-	protected static void extractRenderState(GuiGraphicsExtractor graphics, Set<Title> titles, int xPos, int yPos, float tickDelta, float scale, UIAndVisualsConfig.Direction direction, UIAndVisualsConfig.Alignment alignment) {
+	protected static void render(GuiGraphicsExtractor graphics, Set<Title> titles, int xPos, int yPos, float tickDelta, float scale, UIAndVisualsConfig.Direction direction, UIAndVisualsConfig.Alignment alignment) {
 		if (titles.isEmpty()) return;
 		Font textRenderer = Minecraft.getInstance().font;
 
@@ -182,8 +182,8 @@ public class TitleContainer {
 			}
 
 			//Lerp the texts x and y variables
-			title.x = Mth.lerp(tickDelta * 0.5F, title.x, xTextLeft);
-			title.y = Mth.lerp(tickDelta * 0.5F, title.y, y);
+			title.x = Mth.lerp(tickDelta * 0.5f, title.x, xTextLeft);
+			title.y = Mth.lerp(tickDelta * 0.5f, title.y, y);
 
 			//Translate the matrix to the texts position and scale
 			graphics.pose().pushMatrix();

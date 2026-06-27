@@ -94,7 +94,7 @@ public class PreviewTab implements Tab {
 			if (screenLayer == currentScreenLayer) layerButtons[i].active = false;
 		}
 
-		restorePositioning = Button.builder(Component.literal("Restore Positioning"), button -> {
+		restorePositioning = Button.builder(Component.literal("Restore Positioning"), _ -> {
 					WidgetManager.getScreenBuilder(getCurrentLocation()).restorePositioningFromBackup();
 					updateWidgets();
 					onHudWidgetSelected(previewWidget.selectedWidget);
@@ -125,7 +125,7 @@ public class PreviewTab implements Tab {
 		scoreboard.getOrCreatePlayerScore(createHolder(Component.literal("enough lines bye")), placeHolderObjective).set(-9);
 		scoreboard.getOrCreatePlayerScore(createHolder(Component.literal("NEVER GONNA GIVE Y-")), placeHolderObjective).set(-10);
 
-		locationDropdown = parent.createLocationDropdown(location -> updateWidgets());
+		locationDropdown = parent.createLocationDropdown(_ -> updateWidgets());
 		updateWidgets();
 	}
 
@@ -283,7 +283,7 @@ public class PreviewTab implements Tab {
 
 		widgetOptions.addWidget(new StringWidget(width, 9, hudWidget.getDisplayName().copy().withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE), client.font));
 		if (positionRule == null) {
-			widgetOptions.addWidget(Button.builder(Component.literal("Positioning: Auto"), button -> {
+			widgetOptions.addWidget(Button.builder(Component.literal("Positioning: Auto"), _ -> {
 						PositionRule rule = new PositionRule(
 								"screen",
 								PositionRule.Point.DEFAULT,
@@ -300,7 +300,7 @@ public class PreviewTab implements Tab {
 		} else {
 			// Normal hud widgets don't have auto.
 			if (hudWidget instanceof TabHudWidget) {
-				widgetOptions.addWidget(Button.builder(Component.literal("Positioning: Custom"), button -> {
+				widgetOptions.addWidget(Button.builder(Component.literal("Positioning: Custom"), _ -> {
 							screenBuilder.setPositionRule(hudWidget.getInternalID(), null);
 							updateWidgets();
 							onHudWidgetSelected(hudWidget);
@@ -356,7 +356,7 @@ public class PreviewTab implements Tab {
 			// padding thing
 			widgetOptions.addWidget(new AbstractWidget(0, 0, width, 20, Component.empty()) {
 				@Override
-				protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+				protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 				}
 
 				@Override
@@ -406,7 +406,7 @@ public class PreviewTab implements Tab {
 		private int height = 0;
 
 		private WidgetOptionsScrollable() {
-			super(0, 0, 0, 0, Component.literal("Widget Options Scrollable"));
+			super(0, 0, 0, 0, Component.literal("Widget Options Scrollable"), AbstractScrollArea.defaultSettings(8));
 		}
 
 		@Override
@@ -432,7 +432,7 @@ public class PreviewTab implements Tab {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 			this.extractScrollbar(graphics, mouseX, mouseY);
 			height = 0;
 			for (AbstractWidget widget : widgets) {
@@ -478,7 +478,7 @@ public class PreviewTab implements Tab {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 			hoveredPoint = null;
 			graphics.text(client.font, getMessage(), getX(), getY(), CommonColors.WHITE, true);
 			graphics.pose().pushMatrix();
@@ -489,7 +489,7 @@ public class PreviewTab implements Tab {
 			int y = 5; // 30 / 6
 			int h = 20;
 
-			GuiHelper.drawBorder(graphics, x, y + 1, w, h, CommonColors.WHITE);
+			GuiHelper.border(graphics, x, y + 1, w, h, CommonColors.WHITE);
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
 					int squareX = x + (i * getWidth()) / 3;

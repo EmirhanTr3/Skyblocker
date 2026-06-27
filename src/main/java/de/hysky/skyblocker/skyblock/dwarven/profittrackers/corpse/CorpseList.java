@@ -2,6 +2,7 @@ package de.hysky.skyblocker.skyblock.dwarven.profittrackers.corpse;
 
 import de.hysky.skyblocker.skyblock.dwarven.CorpseType;
 import de.hysky.skyblocker.skyblock.itemlist.ItemRepository;
+import de.hysky.skyblocker.utils.FlexibleItemStack;
 import de.hysky.skyblocker.utils.Formatters;
 import de.hysky.skyblocker.utils.render.GuiHelper;
 import org.apache.commons.text.WordUtils;
@@ -20,7 +21,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.ItemStack;
 
 public class CorpseList extends ContainerObjectSelectionList<RewardList.AbstractEntry> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CorpseList.class);
@@ -78,12 +78,12 @@ public class CorpseList extends ContainerObjectSelectionList<RewardList.Abstract
 			case CorpseProfitTracker.JASPER_CRYSTAL -> Component.literal("Jasper Crystal").withStyle(ChatFormatting.LIGHT_PURPLE);
 			case CorpseProfitTracker.ENCHANTMENT_ICE_COLD_1 -> Component.literal("Enchanted Book (Ice Cold I)").withStyle(ChatFormatting.WHITE);
 			default -> {
-				ItemStack itemStack = ItemRepository.getItemStack(itemId);
+				FlexibleItemStack itemStack = ItemRepository.getItemStack(itemId);
 				if (itemStack == null) {
 					LOGGER.error("Item stack for item ID {} is null", itemId);
 					yield Component.empty();
 				}
-				yield itemStack.getHoverName();
+				yield itemStack.getStackOrThrow().getHoverName();
 			}
 		};
 	}
@@ -148,36 +148,36 @@ public class CorpseList extends ContainerObjectSelectionList<RewardList.Abstract
 		// Name  | amount | total price | price per unit
 		// 33.3% | 16.6%  | 25%         | 25%
 		@Override
-		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
 			int x = this.getX();
 			int y = this.getY();
 			int entryWidth = this.getWidth();
 			int entryHeight = this.getHeight();
 			// The +1 is to make the borders stack on top of each other
-			GuiHelper.drawBorder(graphics, x, y, entryWidth, entryHeight + 1, BORDER_COLOR);
-			GuiHelper.drawBorder(graphics, x + entryWidth / 3, y, entryWidth / 6 + 2, entryHeight + 1, BORDER_COLOR);
-			GuiHelper.drawBorder(graphics, x + entryWidth / 2, y, entryWidth / 4, entryHeight + 1, BORDER_COLOR);
+			GuiHelper.border(graphics, x, y, entryWidth, entryHeight + 1, BORDER_COLOR);
+			GuiHelper.border(graphics, x + entryWidth / 3, y, entryWidth / 6 + 2, entryHeight + 1, BORDER_COLOR);
+			GuiHelper.border(graphics, x + entryWidth / 2, y, entryWidth / 4, entryHeight + 1, BORDER_COLOR);
 
 			int entryY = y + INNER_MARGIN;
 			if (itemName != null) {
 				itemName.setY(entryY);
 				itemName.setMaxWidth(entryWidth / 3 - 2 * INNER_MARGIN, StringWidget.TextOverflow.SCROLLING);
-				itemName.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+				itemName.extractRenderState(graphics, mouseX, mouseY, a);
 			}
 
 			if (amount != null) {
 				amount.setY(entryY);
-				amount.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+				amount.extractRenderState(graphics, mouseX, mouseY, a);
 			}
 
 			if (totalPrice != null) {
 				totalPrice.setY(entryY);
-				totalPrice.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+				totalPrice.extractRenderState(graphics, mouseX, mouseY, a);
 			}
 
 			if (pricePerUnit != null) {
 				pricePerUnit.setY(entryY);
-				pricePerUnit.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+				pricePerUnit.extractRenderState(graphics, mouseX, mouseY, a);
 			}
 		}
 

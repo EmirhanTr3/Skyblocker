@@ -29,6 +29,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class ForestNodes {
 	private static final Minecraft client = Minecraft.getInstance();
@@ -38,14 +39,14 @@ public class ForestNodes {
 	public static void init() {
 		Scheduler.INSTANCE.scheduleCyclic(ForestNodes::update, 20);
 		LevelRenderExtractionCallback.EVENT.register(ForestNodes::extractRendering);
-		AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
+		AttackBlockCallback.EVENT.register((_, _, _, pos, _) -> {
 			if (!shouldProcess()) {
 				return InteractionResult.PASS;
 			}
 			forestNodes.remove(pos);
 			return InteractionResult.PASS;
 		});
-		UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+		UseBlockCallback.EVENT.register((_, _, _, hitResult) -> {
 			if (!shouldProcess()) {
 				return InteractionResult.PASS;
 			}
@@ -53,7 +54,7 @@ public class ForestNodes {
 			forestNodes.remove(pos);
 			return InteractionResult.PASS;
 		});
-		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> reset());
+		ClientPlayConnectionEvents.JOIN.register((_, _, _) -> reset());
 		ParticleEvents.FROM_SERVER.register(ForestNodes::onParticle);
 	}
 
@@ -90,14 +91,16 @@ public class ForestNodes {
 		// Get all ItemDisplayEntity within the same block
 		List<Display.ItemDisplay> entities = world.getEntitiesOfClass(
 				Display.ItemDisplay.class,
-				AABB.ofSize(pos.getCenter(), 1.0, 1.0, 1.0),
-				entity -> true
+				AABB.ofSize(Vec3.atCenterOf(pos), 1.0, 1.0, 1.0),
+				_ -> true
 		);
 
 		// Count those with minecraft:string
 		return (int) entities.stream()
 				.filter(entity -> {
-					ItemStack stack = entity.getItemStack();
+					var state = entity.itemRenderState();
+					if (state == null) return false;
+					ItemStack stack = state.itemStack();
 					return !stack.isEmpty() && stack.getItem().equals(Items.STRING);
 				})
 				.count();

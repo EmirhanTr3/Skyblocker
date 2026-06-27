@@ -124,9 +124,9 @@ public class StatusBar implements LayoutElement, Renderable, GuiEventListener, N
 	}
 
 	@Override
-	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		renderBar(graphics);
-		if (enabled) renderText(graphics);
+	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+		extractBar(graphics);
+		if (enabled) extractText(graphics);
 	}
 
 	protected Identifier getIcon() {
@@ -134,7 +134,7 @@ public class StatusBar implements LayoutElement, Renderable, GuiEventListener, N
 	}
 
 	@SuppressWarnings("incomplete-switch")
-	public void renderBar(GuiGraphicsExtractor graphics) {
+	public void extractBar(GuiGraphicsExtractor graphics) {
 		if (renderWidth <= 0) return;
 		int transparency = transparency(-1);
 		switch (iconPosition) {
@@ -145,15 +145,15 @@ public class StatusBar implements LayoutElement, Renderable, GuiEventListener, N
 		int barWidth = iconPosition.equals(IconPosition.OFF) ? renderWidth : renderWidth - ICON_SIZE - 1;
 		int barX = iconPosition.equals(IconPosition.LEFT) ? renderX + ICON_SIZE + 1 : renderX;
 		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BAR_BACK, barX, renderY + 1, barWidth, 7, transparency);
-		drawBarFill(graphics, barX, barWidth);
-		//graphics.drawText(MinecraftClient.getInstance().textRenderer, gridX + " " + gridY + " s:" + size , x, y-9, Colors.WHITE, true);
+		extractBarFill(graphics, barX, barWidth);
+		//context.drawText(MinecraftClient.getInstance().textRenderer, gridX + " " + gridY + " s:" + size , x, y-9, Colors.WHITE, true);
 	}
 
-	protected void drawBarFill(GuiGraphicsExtractor graphics, int barX, int barWith) {
-		GuiHelper.renderNineSliceColored(graphics, BAR_FILL, barX + 1, renderY + 2, (int) ((barWith - 2) * fill), 5, transparency(colors[0].getRGB()));
+	protected void extractBarFill(GuiGraphicsExtractor graphics, int barX, int barWith) {
+		GuiHelper.nineSliceColored(graphics, BAR_FILL, barX + 1, renderY + 2, (int) ((barWith - 2) * fill), 5, transparency(colors[0].getRGB()));
 
 		if (hasOverflow() && overflowFill > 0) {
-			GuiHelper.renderNineSliceColored(graphics, BAR_FILL, barX + 1, renderY + 2, (int) ((barWith - 2) * Math.min(overflowFill, 1)), 5, transparency(colors[1].getRGB()));
+			GuiHelper.nineSliceColored(graphics, BAR_FILL, barX + 1, renderY + 2, (int) ((barWith - 2) * Math.min(overflowFill, 1)), 5, transparency(colors[1].getRGB()));
 		}
 	}
 
@@ -169,7 +169,7 @@ public class StatusBar implements LayoutElement, Renderable, GuiEventListener, N
 		this.updateValues(resource.value() / (float) resource.max(), resource.overflow() / (float) resource.max(), resource.value(), resource.max(), resource.overflow() > 0 ? resource.overflow() : null);
 	}
 
-	public void renderText(GuiGraphicsExtractor graphics) {
+	public void extractText(GuiGraphicsExtractor graphics) {
 		if (!showText()) return;
 		Font textRenderer = Minecraft.getInstance().font;
 		int barWidth = iconPosition.equals(IconPosition.OFF) ? renderWidth : renderWidth - ICON_SIZE - 1;
@@ -201,10 +201,10 @@ public class StatusBar implements LayoutElement, Renderable, GuiEventListener, N
 		int color = transparency(displayColor.getRGB());
 		int outlineColor = transparency(CommonColors.BLACK);
 
-		GuiHelper.drawOutlinedText(graphics, Component.translationArg(text), x, y, color, outlineColor);
+		GuiHelper.outlinedText(graphics, Component.translationArg(text), x, y, color, outlineColor);
 	}
 
-	public void renderCursor(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	public void extractCursor(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		int temp_x = renderX;
 		int temp_y = renderY;
 		boolean temp_ghost = inMouse;
@@ -213,7 +213,7 @@ public class StatusBar implements LayoutElement, Renderable, GuiEventListener, N
 		renderY = mouseY;
 		inMouse = false;
 
-		extractRenderState(graphics, mouseX, mouseY, delta);
+		extractRenderState(graphics, mouseX, mouseY, a);
 
 		renderX = temp_x;
 		renderY = temp_y;
@@ -452,17 +452,17 @@ public class StatusBar implements LayoutElement, Renderable, GuiEventListener, N
 		}
 
 		@Override
-		protected void drawBarFill(GuiGraphicsExtractor graphics, int barX, int barWith) {
+		protected void extractBarFill(GuiGraphicsExtractor graphics, int barX, int barWith) {
 			if (hasOverflow() && overflowFill > 0) {
 				if (overflowFill > fill && SkyblockerConfigManager.get().uiAndVisuals.bars.intelligenceDisplay == UIAndVisualsConfig.IntelligenceDisplay.IN_FRONT) {
-					GuiHelper.renderNineSliceColored(graphics, BAR_FILL, barX + 1, getY() + 2, (int) ((barWith - 2) * Math.min(overflowFill, 1)), 5, transparency(getColors()[1].getRGB()));
-					GuiHelper.renderNineSliceColored(graphics, BAR_FILL, barX + 1, getY() + 2, (int) ((barWith - 2) * fill), 5, transparency(getColors()[0].getRGB()));
+					GuiHelper.nineSliceColored(graphics, BAR_FILL, barX + 1, getY() + 2, (int) ((barWith - 2) * Math.min(overflowFill, 1)), 5, transparency(getColors()[1].getRGB()));
+					GuiHelper.nineSliceColored(graphics, BAR_FILL, barX + 1, getY() + 2, (int) ((barWith - 2) * fill), 5, transparency(getColors()[0].getRGB()));
 				} else {
-					GuiHelper.renderNineSliceColored(graphics, BAR_FILL, barX + 1, getY() + 2, (int) ((barWith - 2) * fill), 5, transparency(getColors()[0].getRGB()));
-					GuiHelper.renderNineSliceColored(graphics, BAR_FILL, barX + 1, getY() + 2, (int) ((barWith - 2) * Math.min(overflowFill, 1)), 5, transparency(getColors()[1].getRGB()));
+					GuiHelper.nineSliceColored(graphics, BAR_FILL, barX + 1, getY() + 2, (int) ((barWith - 2) * fill), 5, transparency(getColors()[0].getRGB()));
+					GuiHelper.nineSliceColored(graphics, BAR_FILL, barX + 1, getY() + 2, (int) ((barWith - 2) * Math.min(overflowFill, 1)), 5, transparency(getColors()[1].getRGB()));
 				}
 			} else {
-				GuiHelper.renderNineSliceColored(graphics, BAR_FILL, barX + 1, getY() + 2, (int) ((barWith - 2) * fill), 5, transparency(getColors()[0].getRGB()));
+				GuiHelper.nineSliceColored(graphics, BAR_FILL, barX + 1, getY() + 2, (int) ((barWith - 2) * fill), 5, transparency(getColors()[0].getRGB()));
 			}
 		}
 	}
@@ -495,7 +495,7 @@ public class StatusBar implements LayoutElement, Renderable, GuiEventListener, N
 		}
 
 		@Override
-		protected void drawBarFill(GuiGraphicsExtractor graphics, int barX, int barWidth) {
+		protected void extractBarFill(GuiGraphicsExtractor graphics, int barX, int barWidth) {
 			Minecraft client = Minecraft.getInstance();
 			boolean withering = client.player != null && client.player.hasEffect(MobEffects.WITHER);
 			boolean poisoned = client.player != null && client.player.hasEffect(MobEffects.POISON);
@@ -509,9 +509,9 @@ public class StatusBar implements LayoutElement, Renderable, GuiEventListener, N
 				fillColor = getColors()[0].getRGB();
 			}
 
-			GuiHelper.renderNineSliceColored(graphics, BAR_FILL, barX + 1, getY() + 2, (int) ((barWidth - 2) * fill), 5, transparency(fillColor));
+			GuiHelper.nineSliceColored(graphics, BAR_FILL, barX + 1, getY() + 2, (int) ((barWidth - 2) * fill), 5, transparency(fillColor));
 			if (hasOverflow() && overflowFill > 0) {
-				GuiHelper.renderNineSliceColored(graphics, BAR_FILL, barX + 1, getY() + 2, (int) ((barWidth - 2) * Math.min(overflowFill, 1)), 5, transparency(getColors()[1].getRGB()));
+				GuiHelper.nineSliceColored(graphics, BAR_FILL, barX + 1, getY() + 2, (int) ((barWidth - 2) * Math.min(overflowFill, 1)), 5, transparency(getColors()[1].getRGB()));
 			}
 		}
 

@@ -11,8 +11,8 @@ import de.hysky.skyblocker.skyblock.dungeon.secrets.DungeonPlayerManager;
 import de.hysky.skyblocker.utils.Utils;
 import de.hysky.skyblocker.utils.render.GuiHelper;
 import de.hysky.skyblocker.utils.scheduler.Scheduler;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
@@ -48,30 +48,30 @@ public class DungeonMap {
 
 	@Init
 	public static void init() {
-		HudElementRegistry.attachElementAfter(VanillaHudElements.STATUS_EFFECTS, DUNGEON_MAP, (context, tickCounter) -> extractRenderState(context));
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(ClientCommandManager.literal("skyblocker")
-				.then(ClientCommandManager.literal("hud")
-						.then(ClientCommandManager.literal("dungeon")
+		HudElementRegistry.attachElementAfter(VanillaHudElements.MOB_EFFECTS, DUNGEON_MAP, (context, _) -> extract(context));
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> dispatcher.register(ClientCommands.literal("skyblocker")
+				.then(ClientCommands.literal("hud")
+						.then(ClientCommands.literal("dungeon")
 								.executes(Scheduler.queueOpenScreenCommand(DungeonMapConfigScreen::new))
 						)
 				)
 		));
-		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> reset());
+		ClientPlayConnectionEvents.JOIN.register((_, _, _) -> reset());
 	}
 
 	private static boolean shouldProcess() {
 		return Utils.isInDungeons() && DungeonScore.isDungeonStarted() && !DungeonManager.isInBoss();
 	}
 
-	private static void extractRenderState(GuiGraphicsExtractor graphics) {
+	private static void extract(GuiGraphicsExtractor graphics) {
 		DungeonsConfig.DungeonMap dungeonMap = SkyblockerConfigManager.get().dungeons.dungeonMap;
 		if (shouldProcess() && dungeonMap.enableMap) {
-			extractRenderState(graphics, dungeonMap.mapX, dungeonMap.mapY, dungeonMap.mapScaling, dungeonMap.fancyMap);
+			extract(graphics, dungeonMap.mapX, dungeonMap.mapY, dungeonMap.mapScaling, dungeonMap.fancyMap);
 		}
 	}
 
-	public static void extractRenderState(GuiGraphicsExtractor graphics, int x, int y, float scale, boolean fancy) {
-		extractRenderState(graphics, x, y, scale, fancy, Integer.MIN_VALUE, Integer.MIN_VALUE, null);
+	public static void extract(GuiGraphicsExtractor context, int x, int y, float scale, boolean fancy) {
+		extractRenderState(context, x, y, scale, fancy, Integer.MIN_VALUE, Integer.MIN_VALUE, null);
 	}
 
 	/**
@@ -90,14 +90,14 @@ public class DungeonMap {
 		graphics.pose().translate(x, y);
 		graphics.pose().scale(scale, scale);
 
-		if (dungeonMap.backgroundBlur) GuiHelper.submitBlurredRectangle(graphics, 0, 0, 128, 128, 5);
-		if (dungeonMap.showOutline) GuiHelper.drawBorder(graphics, 0, 0, 128, 128, CommonColors.LIGHT_GRAY);
+		if (dungeonMap.backgroundBlur) GuiHelper.blurredRectangle(graphics, 0, 0, 128, 128, 5);
+		if (dungeonMap.showOutline) GuiHelper.border(graphics, 0, 0, 128, 128, CommonColors.LIGHT_GRAY);
 
 		DungeonMapTexture.blitMap(graphics);
-		DungeonMapLabels.renderRoomNames(graphics);
+		DungeonMapLabels.extractRoomNames(graphics);
 
 		UUID hoveredHead = null;
-		if (fancy) hoveredHead = renderPlayerHeads(graphics, client.level, state, mouseX / scale, mouseY / scale, enlarge);
+		if (fancy) hoveredHead = extractPlayerHeads(graphics, client.level, state, mouseX / scale, mouseY / scale, enlarge);
 		graphics.pose().popMatrix();
 		return hoveredHead;
 	}
@@ -110,7 +110,7 @@ public class DungeonMap {
 		} else return cachedMapIdComponent != null ? cachedMapIdComponent : DEFAULT_MAP_ID_COMPONENT;
 	}
 
-	private static @Nullable UUID renderPlayerHeads(GuiGraphicsExtractor graphics, Level world, MapItemSavedData state, double mouseX, double mouseY, @Nullable UUID enlarge) {
+	private static @Nullable UUID extractPlayerHeads(GuiGraphicsExtractor graphics, Level level, MapItemSavedData state, double mouseX, double mouseY, @Nullable UUID enlarge) {
 		if (!DungeonManager.isClearingDungeon()) return null;
 
 		// Used to index through the player list to find which dungeon player corresponds to which map decoration.
@@ -140,7 +140,7 @@ public class DungeonMap {
 				dungeonPlayerError(mapDecoration.getKey(), "has null uuid", i - 1, DungeonPlayerManager.getPlayers(), ((MapItemSavedDataAccessor) state).getDecorations());
 				continue;
 			}
-			PlayerRenderState player = PlayerRenderState.of(world, dungeonPlayer, mapDecoration.getValue());
+			PlayerRenderState player = PlayerRenderState.of(level, dungeonPlayer, mapDecoration.getValue());
 
 			// Actually render the player head
 			graphics.pose().pushMatrix();
@@ -155,8 +155,8 @@ public class DungeonMap {
 				graphics.pose().scale(2, 2);
 				hovered = player.uuid();
 			}
-			GuiHelper.drawPlayerHead(graphics, -4, -4, 8, player.uuid());
-			GuiHelper.drawBorder(graphics, -5, -5, 10, 10, dungeonPlayer.dungeonClass().color());
+			GuiHelper.playerHead(graphics, -4, -4, 8, player.uuid());
+			GuiHelper.border(graphics, -5, -5, 10, 10, dungeonPlayer.dungeonClass().color());
 			graphics.fill(-1, -7, 1, -5, dungeonPlayer.dungeonClass().color());
 			graphics.pose().popMatrix();
 		}
@@ -180,7 +180,7 @@ public class DungeonMap {
 			// Use the player entity if it exists, since it gives the most accurate position and rotation
 			Player playerEntity = world.getPlayerByUUID(dungeonPlayer.uuid());
 			Vector2dc mapPos = playerEntity != null ? DungeonMapUtils.getMapPosFromPhysical(DungeonManager.getPhysicalEntrancePos(), DungeonManager.getMapEntrancePos(), DungeonManager.getMapRoomSize(), playerEntity.position()) : new Vector2d(mapDecoration.x() / 2d + 64, mapDecoration.y() / 2d + 64);
-			float deg = playerEntity != null ? playerEntity.getYRot() : mapDecoration.rot() * 360 / 16.0F;
+			float deg = playerEntity != null ? playerEntity.getYRot() : mapDecoration.rot() * 360 / 16.0f;
 
 			return new PlayerRenderState(dungeonPlayer.uuid(), dungeonPlayer.name(), mapPos, deg);
 		}

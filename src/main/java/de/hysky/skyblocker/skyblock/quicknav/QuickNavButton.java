@@ -99,7 +99,7 @@ public class QuickNavButton extends AbstractWidget {
 		Tooltip tip;
 		try {
 			setTooltip(tip = Tooltip.create(ComponentSerialization.CODEC.decode(JsonOps.INSTANCE, SkyblockerMod.GSON.fromJson(tooltip, JsonElement.class)).getOrThrow().getFirst()));
-		} catch (Exception e) {
+		} catch (Exception _) {
 			setTooltip(tip = Tooltip.create(Component.literal(tooltip)));
 		}
 		this.tooltip = tip;
@@ -142,7 +142,7 @@ public class QuickNavButton extends AbstractWidget {
 			this.temporaryToggled = true;
 			this.toggleTime = System.currentTimeMillis();
 			if (command == null || command.isEmpty()) {
-				Minecraft.getInstance().player.displayClientMessage(Constants.PREFIX.get().append(Component.literal("Quick Nav button index " + (index + 1) + " has no command!").withStyle(ChatFormatting.RED)), false);
+				Minecraft.getInstance().player.sendSystemMessage(Constants.PREFIX.get().append(Component.literal("Quick Nav button index " + (index + 1) + " has no command!").withStyle(ChatFormatting.RED)));
 			} else {
 				MessageScheduler.INSTANCE.sendMessageAfterCooldown(command, true);
 			}
@@ -165,12 +165,12 @@ public class QuickNavButton extends AbstractWidget {
 	 * then calculates appropriate values for rendering based on its current state,
 	 * and finally draws both the background and icon of the button on screen.
 	 *
-	 * @param context the context in which to render the button
+	 * @param graphics the context in which to render the button
 	 * @param mouseX  the x-coordinate of the mouse cursor
 	 * @param mouseY  the y-coordinate of the mouse cursor
 	 */
 	@Override
-	public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 		this.updateCoordinates();
 
 		// Note that this changes the return value of `toggled()`, so do not call it after this point.

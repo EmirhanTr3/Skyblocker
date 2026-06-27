@@ -26,7 +26,7 @@ public class FishingHelper {
 	@Init
 	public static void init() {
 		// Initiate wait for bobber to appear server-side upon cast
-		UseItemCallback.EVENT.register((player, world, hand) -> {
+		UseItemCallback.EVENT.register((player, _, hand) -> {
 			ItemStack stack = player.getItemInHand(hand);
 			if (!Utils.isOnSkyblock()) {
 				return InteractionResult.PASS;
@@ -73,7 +73,7 @@ public class FishingHelper {
 			LocalPlayer player = Minecraft.getInstance().player;
 			if (player != null && player.fishing != null) {
 				String name = armorStand.getCustomName().getString();
-				if (name.equals("!!!") && player.fishing.getBoundingBox().inflate(4D).contains(armorStand.position())) {
+				if (name.equals("!!!") && player.fishing.getBoundingBox().inflate(4d).contains(armorStand.position())) {
 					if (SkyblockerConfigManager.get().helpers.fishing.enableFishingHelper) {
 						TitleContainer.addTitleAndPlaySound(title, 10);
 					}

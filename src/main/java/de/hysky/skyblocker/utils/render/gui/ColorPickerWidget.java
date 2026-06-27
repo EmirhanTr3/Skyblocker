@@ -178,7 +178,7 @@ public class ColorPickerWidget extends AbstractWidget {
 	}
 
 	@Override
-	protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 		int color = 0x80_60_60_60;
 		// Hue
 		graphics.fill(hRect.left() - 1, hRect.top() - 1, hRect.right() + 1, hRect.bottom() + 1, color);
@@ -188,7 +188,7 @@ public class ColorPickerWidget extends AbstractWidget {
 			float segmentLength = (float) hRect.width() / rainbowColors.length;
 			float startX = hRect.left() + segmentLength * i;
 			float endX = hRect.left() + segmentLength * (i + 1);
-			GuiHelper.drawHorizontalGradient(graphics, startX, hRect.top(), endX, hRect.bottom(), startColor, endColor);
+			GuiHelper.horizontalGradient(graphics, startX, hRect.top(), endX, hRect.bottom(), startColor, endColor);
 		}
 		drawThumb(graphics, hRect, (int) hThumbX);
 
@@ -198,7 +198,7 @@ public class ColorPickerWidget extends AbstractWidget {
 		int pickerY = svRect.top();
 		int pickerEndX = svRect.right();
 		int pickerEndY = svRect.bottom();
-		GuiHelper.drawHorizontalGradient(graphics, pickerX, pickerY, pickerEndX, pickerEndY, -1, svColor);
+		GuiHelper.horizontalGradient(graphics, pickerX, pickerY, pickerEndX, pickerEndY, -1, svColor);
 		graphics.fillGradient(pickerX, pickerY, pickerEndX, pickerEndY, 1, 0xFF_00_00_00);
 
 		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SV_THUMB_TEXTURE,
@@ -210,7 +210,7 @@ public class ColorPickerWidget extends AbstractWidget {
 		// Alpha
 		if (hasAlpha) {
 			graphics.fill(aRect.left() - 1, aRect.top() - 1, aRect.right() + 1, aRect.bottom() + 1, color);
-			GuiHelper.drawHorizontalGradient(graphics, aRect.left(), aRect.top(), aRect.right(), aRect.bottom(), CommonColors.BLACK, CommonColors.WHITE);
+			GuiHelper.horizontalGradient(graphics, aRect.left(), aRect.top(), aRect.right(), aRect.bottom(), CommonColors.BLACK, CommonColors.WHITE);
 
 			drawThumb(graphics, aRect, (int) aThumbX);
 

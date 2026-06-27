@@ -25,11 +25,11 @@ public final class PlayerWidget extends ProfileViewerWidget {
 	}
 
 	@Override
-	protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+	protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		ActiveTextCollector textCollector = graphics.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.NONE);
 
 		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND, this.getX(), this.getY(), this.getWidth(), this.getHeight());
 		textCollector.acceptScrollingWithDefaultCenter(this.entity.getName(), this.getX() + NAME_TAG_X_OFFSET, this.getRight() - NAME_TAG_X_OFFSET, this.getY() + NAME_TAG_Y_OFFSET, this.getY() + NAME_TAG_Y_OFFSET + getFont().lineHeight);
-		InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, this.getX(), this.getY(), this.getRight(), this.getBottom(), 42, 0.0625f, mouseX, mouseY, this.entity);
+		InventoryScreen.extractEntityInInventoryFollowsMouse(graphics, this.getX(), this.getY(), this.getRight(), this.getBottom(), 42, 0.0625f, mouseX, mouseY, this.entity);
 	}
 }

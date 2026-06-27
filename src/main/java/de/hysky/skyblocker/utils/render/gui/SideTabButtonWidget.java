@@ -18,7 +18,7 @@ public class SideTabButtonWidget extends ImageButton {
 	}
 
 	public SideTabButtonWidget(int x, int y, boolean toggled, WidgetSprites sprites, ItemStack icon) {
-		super(x, y, 35, 27, sprites, _ignored -> {});
+		super(x, y, 35, 27, sprites, _ -> {});
 		this.icon = icon.copy();
 	}
 
@@ -27,7 +27,7 @@ public class SideTabButtonWidget extends ImageButton {
 	}
 
 	@Override
-	public void renderContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	public void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 		Identifier identifier = sprites.get(true, this.selected);
 		int x = getX();
 		if (this.selected) x -= 2;

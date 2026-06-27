@@ -17,6 +17,7 @@ import java.util.function.Predicate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
+import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -48,12 +49,12 @@ public class HeadSelectionWidget extends AbstractContainerWidget {
 	private @Nullable HeadButton selectedButton;
 
 	public HeadSelectionWidget(int x, int y, int width, int height) {
-		super(x, y, width, height, Component.nullToEmpty("HeadSelection"));
+		super(x, y, width, height, Component.nullToEmpty("HeadSelection"), AbstractScrollArea.defaultSettings(8));
 		this.searchField = new EditBox(Minecraft.getInstance().font, x + 3, y + 3, width - 6, 12, Component.translatable("gui.recipebook.search_hint"));
 		this.searchField.setResponder(this::filterButtons);
 
 		for (CustomHelmetTextures.NamedTexture tex : CustomHelmetTextures.getTextures()) {
-			ItemStack head = ProfileViewerUtils.createSkull(tex.texture());
+			ItemStack head = ProfileViewerUtils.createSkull(tex.texture()).getStackOrThrow();
 			HeadButton button = new HeadButton(tex.name(), tex.texture(), head, this::onClick);
 			this.allButtons.add(button);
 		}
@@ -63,7 +64,7 @@ public class HeadSelectionWidget extends AbstractContainerWidget {
 			this.allButtons.add(button);
 		}
 
-		this.noneButton = new HeadButton("", null, new ItemStack(Items.BARRIER), _ignored -> onClick(null));
+		this.noneButton = new HeadButton("", null, new ItemStack(Items.BARRIER), _ -> onClick(null));
 
 		filterButtons("");
 	}
@@ -167,10 +168,10 @@ public class HeadSelectionWidget extends AbstractContainerWidget {
 	}
 
 	@Override
-	protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, INNER_SPACE_TEXTURE, getX(), getY(), getWidth(), getHeight());
 
-		searchField.extractRenderState(graphics, mouseX, mouseY, delta);
+		searchField.extractRenderState(graphics, mouseX, mouseY, a);
 
 		int startY = searchField.getBottom() + 3;
 		int startX = getX() + 2;
@@ -186,7 +187,7 @@ public class HeadSelectionWidget extends AbstractContainerWidget {
 				continue;
 			}
 			b.setY(y);
-			b.extractRenderState(graphics, mouseX, mouseY, delta);
+			b.extractRenderState(graphics, mouseX, mouseY, a);
 			if (b.isMouseOver(mouseX, mouseY) && mouseX >= startX && mouseX < endX && mouseY >= startY && mouseY < endY) {
 				hovered = b;
 			}
@@ -208,7 +209,7 @@ public class HeadSelectionWidget extends AbstractContainerWidget {
 		}
 
 		double adjustedMouseY = click.y() + scrollAmount();
-		if (scrollbarVisible()) {
+		if (this.scrollable()) {
 			int scrollbarX = scrollBarX();
 			// Default scrollbar width is 6 pixels
 			if (click.x() >= scrollbarX && click.x() < scrollbarX + 6) {
@@ -319,7 +320,7 @@ public class HeadSelectionWidget extends AbstractContainerWidget {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 			graphics.item(this.getHead(), getX() + 2, getY() + 2);
 			if (this.selected) {
 				graphics.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), 0x3000FF00);
@@ -363,7 +364,7 @@ public class HeadSelectionWidget extends AbstractContainerWidget {
 				return stack;
 			}
 
-			return Ico.BARRIER;
+			return Ico.BARRIER.getStackOrThrow();
 		}
 	}
 }

@@ -19,8 +19,10 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
+import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.IMEPreeditOverlay;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -32,6 +34,7 @@ import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.PreeditEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
@@ -72,7 +75,7 @@ public class CustomizeNameWidget extends AbstractContainerWidget {
 	private @Nullable Style insertAs;
 
 	public CustomizeNameWidget(Screen parent) {
-		super(0, 0, 0, 0, Component.literal("Customize Item Name"));
+		super(0, 0, 0, 0, Component.literal("Customize Item Name"), AbstractScrollArea.defaultSettings(4));
 		ImmutableList.Builder<AbstractWidget> builder = ImmutableList.builder();
 		// the gui is a grid of 20 columns, should be 16 px each
 		textField = grid.addChild(new TextField(), 1, 0, 1, 20);
@@ -87,10 +90,10 @@ public class CustomizeNameWidget extends AbstractContainerWidget {
 
 		addFormattingButtons(builder);
 
-		builder.add(grid.addChild(Button.builder(Component.translatable("skyblocker.customItemNames.screen.customColor"), b ->
+		builder.add(grid.addChild(Button.builder(Component.translatable("skyblocker.customItemNames.screen.customColor"), _ ->
 				client.setScreen(ColorPopup.create(parent, color -> setStyle(Style.EMPTY.withColor(color))))
 		).size(48, 16).build(), 2, 17, 1, 3));
-		builder.add(grid.addChild(Button.builder(Component.translatable("skyblocker.customItemNames.screen.gradientColor"), b ->
+		builder.add(grid.addChild(Button.builder(Component.translatable("skyblocker.customItemNames.screen.gradientColor"), _ ->
 				client.setScreen(ColorPopup.createGradient(parent, this::createGradient))
 		).size(48, 16).build(), 3, 17, 1, 3));
 		builder.add(grid.addChild(new StringWidget(20 * 16, textRenderer.lineHeight, Component.translatable("skyblocker.customItemNames.screen.howToRemove").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY), textRenderer)/*.alignLeft()*/, 4, 0, 1, 20, LayoutSettings.defaults().paddingTop(2)));
@@ -135,7 +138,7 @@ public class CustomizeNameWidget extends AbstractContainerWidget {
 	}
 
 	@Override
-	protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
+	protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
 		graphics.blitSprite(
 				RenderPipelines.GUI_TEXTURED,
 				INNER_SPACE_TEXTURE,
@@ -379,9 +382,9 @@ public class CustomizeNameWidget extends AbstractContainerWidget {
 		protected void updateWidgetNarration(NarrationElementOutput builder) {}
 
 		@Override
-		protected void renderContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
-			this.renderDefaultSprite(graphics);
-			this.renderDefaultLabel(graphics.textRenderer());
+		protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+			this.extractDefaultSprite(graphics);
+			this.extractDefaultLabel(graphics.textRenderer());
 		}
 	}
 
@@ -402,8 +405,8 @@ public class CustomizeNameWidget extends AbstractContainerWidget {
 		}
 
 		@Override
-		public void renderContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
-			this.renderDefaultSprite(graphics);
+		public void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+			this.extractDefaultSprite(graphics);
 			graphics.fill(getX() + 2, getY() + 2, getRight() - 2, getBottom() - 2, intColor);
 		}
 
@@ -416,8 +419,8 @@ public class CustomizeNameWidget extends AbstractContainerWidget {
 	 * Used to capture inputs and render the text. Most logic is done in the screen itself
 	 */
 	private class TextField extends AbstractWidget {
+		private @Nullable IMEPreeditOverlay preeditOverlay;
 		private int renderedSelectionStart;
-
 		private int renderedSelectionEnd;
 		private boolean updateMePrettyPlease = false;
 		private int renderStart;
@@ -428,7 +431,7 @@ public class CustomizeNameWidget extends AbstractContainerWidget {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 			if (renderedSelectionStart != selectionStart || renderedSelectionEnd != selectionEnd || updateMePrettyPlease) {
 				renderedSelectionStart = selectionStart;
 				renderedSelectionEnd = selectionEnd;
@@ -440,7 +443,7 @@ public class CustomizeNameWidget extends AbstractContainerWidget {
 			}
 
 			graphics.fill(getX(), getY(), getRight(), getBottom(), CommonColors.BLACK);
-			GuiHelper.drawBorder(graphics, getX(), getY(), getWidth(), getHeight(), isFocused() ? CommonColors.WHITE : CommonColors.GRAY);
+			GuiHelper.border(graphics, getX(), getY(), getWidth(), getHeight(), isFocused() ? CommonColors.WHITE : CommonColors.GRAY);
 			int textX = getTextX();
 			int textY = getY() + (getHeight() - textRenderer.lineHeight) / 2;
 
@@ -452,6 +455,11 @@ public class CustomizeNameWidget extends AbstractContainerWidget {
 			}
 
 			graphics.text(textRenderer, text, textX, textY, -1, false);
+
+			if (this.preeditOverlay != null) {
+				this.preeditOverlay.updateInputPosition(textX, textY);
+				graphics.setPreeditOverlay(this.preeditOverlay);
+			}
 
 			this.handleCursor(graphics);
 		}
@@ -510,6 +518,16 @@ public class CustomizeNameWidget extends AbstractContainerWidget {
 		}
 
 		@Override
+		public boolean preeditUpdated(@Nullable final PreeditEvent event) {
+			if (this.isActive()) {
+				this.preeditOverlay = event != null ? new IMEPreeditOverlay(event, CustomizeNameWidget.this.textRenderer, 9 + 1) : null;
+				return true;
+			}
+
+			return super.preeditUpdated(event);
+		}
+
+		@Override
 		public void onClick(MouseButtonEvent click, boolean doubled) {
 			GetClickedPositionVisitor getClickedPositionVisitor = new GetClickedPositionVisitor((int) click.x() - getTextX());
 			text.visit(getClickedPositionVisitor, Style.EMPTY);
@@ -527,6 +545,16 @@ public class CustomizeNameWidget extends AbstractContainerWidget {
 
 		private int getTextX() {
 			return getX() + 2;
+		}
+
+		@Override
+		public void setFocused(final boolean focused) {
+			super.setFocused(focused);
+
+			// Required for IME support
+			if (focused) {
+				Minecraft.getInstance().onTextInputFocusChange(this, focused);
+			}
 		}
 
 		@Override

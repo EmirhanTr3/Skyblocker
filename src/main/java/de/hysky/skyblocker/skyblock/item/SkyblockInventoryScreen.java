@@ -88,7 +88,7 @@ public class SkyblockInventoryScreen extends InventoryScreen implements HoveredI
 			if (!Files.exists(resolve)) return EMPTY_EQUIPMENT.get();
 			try {
 				return CODEC.parse(NbtOps.INSTANCE, NbtIo.read(resolve)).getOrThrow();
-			} catch (NoSuchFileException ignored) {
+			} catch (NoSuchFileException _) {
 			} catch (Exception e) {
 				LOGGER.error("[Skyblocker] Failed to load Equipment data", e);
 			}
@@ -114,7 +114,7 @@ public class SkyblockInventoryScreen extends InventoryScreen implements HoveredI
 			else load(profileId);
 		}));
 
-		ClientLifecycleEvents.CLIENT_STOPPING.register(client1 -> {
+		ClientLifecycleEvents.CLIENT_STOPPING.register(_ -> {
 			String profileId = Utils.getProfileId();
 			if (!profileId.isBlank()) save(profileId);
 		});
@@ -140,25 +140,23 @@ public class SkyblockInventoryScreen extends InventoryScreen implements HoveredI
 	}
 
 	@Override
-	protected void renderSlots(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-		super.renderSlots(graphics, mouseX, mouseY);
+	protected void extractSlots(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+		super.extractSlots(graphics, mouseX, mouseY);
 
 		for (Slot equipmentSlot : equipmentSlots) {
 			boolean hovered = hoveredSlot == null && isHovering(equipmentSlot.x, equipmentSlot.y, 16, 16, mouseX, mouseY);
 
 			if (hovered) graphics.blitSprite(RenderPipelines.GUI_TEXTURED, AbstractContainerScreenAccessor.getSLOT_HIGHLIGHT_BACK_SPRITE(), equipmentSlot.x - 4, equipmentSlot.y - 4, 24, 24);
 
-			renderSlot(graphics, equipmentSlot, mouseX, mouseY);
+			extractSlot(graphics, equipmentSlot, mouseX, mouseY);
 
 			if (hovered) graphics.blitSprite(RenderPipelines.GUI_TEXTURED, AbstractContainerScreenAccessor.getSLOT_HIGHLIGHT_FRONT_SPRITE(), equipmentSlot.x - 4, equipmentSlot.y - 4, 24, 24);
 		}
-
-		super.renderLabels(graphics, mouseX, mouseY);
 	}
 
 	@Override
-	protected void renderTooltip(GuiGraphicsExtractor graphics, int x, int y) {
-		super.renderTooltip(graphics, x, y);
+	protected void extractTooltip(GuiGraphicsExtractor graphics, int x, int y) {
+		super.extractTooltip(graphics, x, y);
 
 		hoveredItem = null;
 		if (!menu.getCarried().isEmpty()) return;
@@ -181,8 +179,8 @@ public class SkyblockInventoryScreen extends InventoryScreen implements HoveredI
 	}
 
 	@Override
-	protected void renderBg(GuiGraphicsExtractor graphics, float delta, int mouseX, int mouseY) {
-		super.renderBg(graphics, delta, mouseX, mouseY);
+	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+		super.extractBackground(graphics, mouseX, mouseY, a);
 		if (!BACKGROUND.isUsingFallback()) return;
 		for (int i = 0; i < 3; i++) {
 			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_TEXTURE, leftPos + 76, topPos + 7 + i * 18, 18, 18);

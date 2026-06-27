@@ -22,9 +22,9 @@ public abstract class BossHealthOverlayMixin {
 	private Minecraft minecraft;
 
 	@Shadow
-	protected abstract void drawBar(GuiGraphicsExtractor graphics, int x, int y, BossEvent bossBar);
+	protected abstract void extractBar(GuiGraphicsExtractor graphics, int x, int y, BossEvent bossBar);
 
-	@Inject(method = "render", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "extractRenderState", at = @At("HEAD"), cancellable = true)
 	private void onRender(GuiGraphicsExtractor graphics, CallbackInfo ci) {
 		if (SkyblockerConfigManager.get().slayers.displayBossbar && SlayerBossBar.shouldRenderBossBar()) {
 			LerpingBossEvent bossBar = SlayerBossBar.updateBossBar();
@@ -32,7 +32,7 @@ public abstract class BossHealthOverlayMixin {
 			int textWidth = this.minecraft.font.width(bossBar.getName());
 			graphics.text(this.minecraft.font, bossBar.getName(), graphics.guiWidth() / 2 - textWidth / 2, 3, CommonColors.WHITE);
 
-			this.drawBar(graphics, (graphics.guiWidth() / 2) - 91, 12, bossBar);
+			this.extractBar(graphics, (graphics.guiWidth() / 2) - 91, 12, bossBar);
 
 			ci.cancel();
 		}

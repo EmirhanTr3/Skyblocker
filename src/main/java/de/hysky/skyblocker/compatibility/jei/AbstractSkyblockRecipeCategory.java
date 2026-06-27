@@ -5,6 +5,7 @@ import java.util.List;
 import org.joml.Vector2f;
 
 import de.hysky.skyblocker.skyblock.itemlist.recipes.SkyblockRecipe;
+import de.hysky.skyblocker.utils.FlexibleItemStack;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawableStatic;
 import mezz.jei.api.gui.ingredient.ICraftingGridHelper;
@@ -17,7 +18,6 @@ import mezz.jei.library.plugins.vanilla.crafting.CraftingRecipeCategory;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 // Note that you must register your own custom recipe type with JEI, you cannot use any types/recipe classes from Vanilla or it will not work!
@@ -25,8 +25,8 @@ public abstract sealed class AbstractSkyblockRecipeCategory<T extends SkyblockRe
 	protected final IGuiHelper guiHelper;
 	protected final ICraftingGridHelper craftingGridHelper;
 
-	protected AbstractSkyblockRecipeCategory(IGuiHelper guiHelper, IRecipeType<T> recipeType, Component title, ItemStack icon) {
-		super(recipeType, title, guiHelper.createDrawableItemStack(icon), CraftingRecipeCategory.width, CraftingRecipeCategory.height);
+	protected AbstractSkyblockRecipeCategory(IGuiHelper guiHelper, IRecipeType<T> recipeType, Component title, FlexibleItemStack icon) {
+		super(recipeType, title, guiHelper.createDrawableItemLike(icon.typeHolder().value()), CraftingRecipeCategory.width, CraftingRecipeCategory.height);
 		this.guiHelper = guiHelper;
 		this.craftingGridHelper = guiHelper.createCraftingGridHelper();
 	}
@@ -47,9 +47,9 @@ public abstract sealed class AbstractSkyblockRecipeCategory<T extends SkyblockRe
 	@Override
 	public void setRecipe(IRecipeLayoutBuilder builder, T recipe, IFocusGroup focuses) {
 		// All of the SkyblockRecipe implementations only have a singular output
-		SlotDisplay result = new SlotDisplay.ItemStackSlotDisplay(recipe.getOutputs().getFirst());
+		SlotDisplay result = new SlotDisplay.ItemStackSlotDisplay(recipe.getOutputs().getFirst().toTemplate());
 		List<SlotDisplay> ingredients = recipe.getInputs().stream()
-				.map(SlotDisplay.ItemStackSlotDisplay::new)
+				.map(flexibleStack -> flexibleStack.isEmpty() ? SlotDisplay.Empty.INSTANCE : new SlotDisplay.ItemStackSlotDisplay(flexibleStack.toTemplate()))
 				.map(SlotDisplay.class::cast)
 				.toList();
 

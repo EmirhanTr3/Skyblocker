@@ -29,7 +29,7 @@ public class WidgetEntry extends WidgetsListEntry {
 	}
 
 	@Override
-	public void renderTooltip(GuiGraphicsExtractor graphics, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY) {
+	public void extractTooltip(GuiGraphicsExtractor graphics, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY) {
 
 	}
 
@@ -39,7 +39,7 @@ public class WidgetEntry extends WidgetsListEntry {
 	}
 
 	@Override
-	public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+	public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
 		int textY = this.getY() + (this.getHeight() - 9) / 2;
 		enableButton.setPosition(this.getX() + this.getWidth() - 110, this.getY() + (this.getHeight() - 12) / 2);
 		enableButton.extractRenderState(graphics, mouseX, mouseY, deltaTicks);

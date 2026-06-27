@@ -17,14 +17,14 @@ public class BooleanSlotEntry extends WidgetsListSlotEntry {
 	public BooleanSlotEntry(WidgetsListTab parent, int slotId, ItemStack icon) {
 		super(parent, slotId, icon);
 		boolean enabled = !icon.skyblocker$getLoreStrings().getLast().toLowerCase(Locale.ENGLISH).contains("enable");
-		enableButton = Button.builder(enabled ? ENABLED_TEXT : DISABLED_TEXT, button -> this.parent.clickAndWaitForServer(this.slotId, 0))
+		enableButton = Button.builder(enabled ? ENABLED_TEXT : DISABLED_TEXT, _ -> this.parent.clickAndWaitForServer(this.slotId, 0))
 				.size(64, 12)
 				.build();
 
 	}
 
 	@Override
-	public void renderTooltip(GuiGraphicsExtractor graphics, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY) {
+	public void extractTooltip(GuiGraphicsExtractor graphics, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY) {
 		if (mouseX >= x && mouseX <= x + entryWidth - 70 && mouseY >= y && mouseY <= y + entryHeight) {
 			@SuppressWarnings("deprecation")
 			List<Component> lore = ItemUtils.getLore(icon);
@@ -38,8 +38,8 @@ public class BooleanSlotEntry extends WidgetsListSlotEntry {
 	}
 
 	@Override
-	public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
-		renderIconAndText(graphics, this.getY(), this.getX(), this.getHeight());
+	public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		extractIconAndText(graphics, this.getY(), this.getX(), this.getHeight());
 		enableButton.setPosition(this.getX() + this.getWidth() - 70, this.getY() + (this.getHeight() - 12) / 2);
 		enableButton.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
 	}

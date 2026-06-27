@@ -4,6 +4,7 @@ import de.hysky.skyblocker.SkyblockerMod;
 import de.hysky.skyblocker.skyblock.profileviewer.utils.LevelFinder;
 import de.hysky.skyblocker.skyblock.profileviewer.utils.ProfileViewerUtils;
 import de.hysky.skyblocker.skyblock.tabhud.util.Ico;
+import de.hysky.skyblocker.utils.FlexibleItemStack;
 import de.hysky.skyblocker.utils.Formatters;
 import de.hysky.skyblocker.utils.render.GuiHelper;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -19,7 +20,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ItemStack;
 
 public class SkillWidget {
 	private final String SKILL_NAME;
@@ -28,9 +28,9 @@ public class SkillWidget {
 	private static final Identifier BAR_FILL = SkyblockerMod.id("bars/bar_fill");
 	private static final Identifier BAR_BACK = SkyblockerMod.id("bars/bar_back");
 
-	private final ItemStack stack;
+	private final FlexibleItemStack stack;
 	private static final Font textRenderer = Minecraft.getInstance().font;
-	private static final Map<String, ItemStack> SKILL_LOGO = Map.ofEntries(
+	private static final Map<String, FlexibleItemStack> SKILL_LOGO = Map.ofEntries(
 			Map.entry("Combat", Ico.STONE_SWORD),
 			Map.entry("Farming", Ico.GOLDEN_HOE),
 			Map.entry("Mining", Ico.STONE_PICKAXE),
@@ -81,7 +81,7 @@ public class SkillWidget {
 	}
 
 	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int x, int y) {
-		graphics.item(this.stack, x + 3, y + 2);
+		graphics.item(this.stack.getStackOrThrow(), x + 3, y + 2);
 		graphics.text(textRenderer, SKILL_NAME + " " + SKILL_LEVEL.level, x + 31, y + 2, Color.white.hashCode(), false);
 
 		Color fillColor = Color.green;
@@ -95,7 +95,7 @@ public class SkillWidget {
 		}
 
 		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BAR_BACK, x + 30, y + 12, 75, 6);
-		GuiHelper.renderNineSliceColored(graphics, BAR_FILL, x + 30, y + 12, (int) (75 * SKILL_LEVEL.fill), 6, fillColor);
+		GuiHelper.nineSliceColored(graphics, BAR_FILL, x + 30, y + 12, (int) (75 * SKILL_LEVEL.fill), 6, fillColor);
 
 		if (mouseX > x + 30 && mouseX < x + 105 && mouseY > y + 10 && mouseY < y + 19) {
 			List<Component> tooltipText = new ArrayList<>();

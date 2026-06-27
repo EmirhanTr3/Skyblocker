@@ -2,6 +2,7 @@ package de.hysky.skyblocker.skyblock.itemlist.recipebook;
 
 import com.google.common.collect.Lists;
 import de.hysky.skyblocker.mixins.accessors.RecipeBookComponentAccessor;
+import de.hysky.skyblocker.utils.FunUtils;
 import de.hysky.skyblocker.utils.render.gui.CyclingTextureWidget;
 import it.unimi.dsi.fastutil.Pair;
 import java.util.List;
@@ -133,14 +134,14 @@ public class SkyblockRecipeBookComponent extends RecipeBookComponent<NoopRecipeB
 				tabButton.right().extractRenderState(graphics, mouseX, mouseY, delta);
 			}
 
-			this.currentTab.left().draw(graphics, left, top, mouseX, mouseY, delta);
+			this.currentTab.left().extractRenderState(graphics, left, top, mouseX, mouseY, delta);
 		}
 	}
 
 	@Override
-	public void renderTooltip(GuiGraphicsExtractor graphics, int x, int y, @Nullable Slot slot) {
+	public void extractTooltip(GuiGraphicsExtractor graphics, int x, int y, @Nullable Slot slot) {
 		if (this.isVisible()) {
-			this.currentTab.left().drawTooltip(graphics, x, y);
+			this.currentTab.left().extractTooltip(graphics, x, y);
 		}
 	}
 
@@ -225,6 +226,7 @@ public class SkyblockRecipeBookComponent extends RecipeBookComponent<NoopRecipeB
 		assert this.searchBox != null;
 		lastSearch = this.searchBox.getValue();
 		String query = this.searchBox.getValue().toLowerCase(Locale.ENGLISH);
+		FunUtils.recipeBookEasterEgg(query);
 
 		this.pirateSpeechForThePeople(query);
 		//Note: The rest of the query checks are implemented by the results class

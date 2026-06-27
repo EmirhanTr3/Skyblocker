@@ -37,7 +37,7 @@ public class SliderWidget<E extends Enum<E> & SliderWidget.OptionInfo> extends A
 	}
 
 	@Override
-	protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 		if (posProgress < current.getOffset()) {
 			posProgress += delta * 5;
 			if (posProgress > current.getOffset()) posProgress = current.getOffset();

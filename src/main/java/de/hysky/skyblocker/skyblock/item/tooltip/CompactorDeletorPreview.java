@@ -1,6 +1,7 @@
 package de.hysky.skyblocker.skyblock.item.tooltip;
 
 import de.hysky.skyblocker.skyblock.itemlist.ItemRepository;
+import de.hysky.skyblocker.utils.FlexibleItemStack;
 import de.hysky.skyblocker.utils.ItemUtils;
 import it.unimi.dsi.fastutil.ints.IntIntPair;
 import it.unimi.dsi.fastutil.ints.IntObjectPair;
@@ -19,6 +20,7 @@ import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPosition
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class CompactorDeletorPreview {
 	/**
@@ -34,14 +36,14 @@ public class CompactorDeletorPreview {
 	public static final Pattern NAME = Pattern.compile("PERSONAL_(?<type>COMPACTOR|DELETOR)_(?<size>\\d+)");
 	private static final Minecraft client = Minecraft.getInstance();
 
-	public static boolean drawPreview(GuiGraphicsExtractor graphics, ItemStack stack, List<Component> tooltips, String type, String size, int x, int y) {
+	public static boolean extractPreview(GuiGraphicsExtractor graphics, ItemStack stack, List<Component> tooltips, String type, String size, int x, int y) {
 		int targetIndex = getTargetIndex(tooltips);
 		if (targetIndex == -1) return false;
 
 		// Get items in compactor or deletor
 		CompoundTag customData = ItemUtils.getCustomData(stack);
 		// Get the slots and their items from the nbt, which is in the format personal_compact_<slot_number> or personal_deletor_<slot_number>
-		List<IntObjectPair<ItemStack>> slots = customData.keySet()
+		List<IntObjectPair<@Nullable FlexibleItemStack>> slots = customData.keySet()
 														.stream()
 														.filter(slot -> slot.contains(type.toLowerCase(Locale.ENGLISH).substring(0, 7)))
 														.map(slot -> IntObjectPair.of(Integer.parseInt(StringUtils.substringAfterLast(slot, "_")), ItemRepository.getItemStack(customData.getStringOr(slot, "")))).toList();

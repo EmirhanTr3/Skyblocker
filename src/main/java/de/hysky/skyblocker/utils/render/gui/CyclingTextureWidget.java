@@ -25,7 +25,7 @@ public class CyclingTextureWidget<T extends Enum<T> & Supplier<Identifier>> exte
 
 	private Function<T, Component> textSupplier = t -> Component.nullToEmpty(t.name());
 	private Function<T, Tooltip> tooltipSupplier = t -> Tooltip.create(Component.translationArg(textSupplier.apply(t)));
-	private Consumer<T> onCycle = t -> {};
+	private Consumer<T> onCycle = _ -> {};
 	private T current;
 
 	private static final WidgetSprites BUTTON = new WidgetSprites(Identifier.withDefaultNamespace("widget/button"),
@@ -59,15 +59,15 @@ public class CyclingTextureWidget<T extends Enum<T> & Supplier<Identifier>> exte
 	}
 
 	@Override
-	protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	protected void extractWidgetRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		var button = BUTTON.get(this.active, this.isHoveredOrFocused());
-		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, button, this.getX(),
+		context.blitSprite(RenderPipelines.GUI_TEXTURED, button, this.getX(),
 				this.getY(), width, height);
-		graphics.blit(RenderPipelines.GUI_TEXTURED, getCurrent().get(),
+		context.blit(RenderPipelines.GUI_TEXTURED, getCurrent().get(),
 				this.getX(), this.getY(), 0, 0, width, height, width, height);
 
 		if (this.isHovered()) {
-			graphics.requestCursor(CursorTypes.POINTING_HAND);
+			context.requestCursor(CursorTypes.POINTING_HAND);
 		}
 	}
 

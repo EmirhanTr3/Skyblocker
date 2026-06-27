@@ -28,7 +28,7 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonColors;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jspecify.annotations.Nullable;
@@ -74,7 +74,7 @@ public class AuctionViewScreen extends AbstractCustomHypixelGUI<AuctionHouseScre
 		infoTextWidget = new StringWidget(Component.literal("Can't Afford"), font).setMaxWidth(imageWidth - 10, StringWidget.TextOverflow.SCROLLING);
 		verticalLayout.addChild(infoTextWidget);
 
-		buyButton = Button.builder(isBinAuction ? Component.translatable("skyblocker.fancyAuctionHouse.buy") : Component.translatable("skyblocker.fancyAuctionHouse.bid"), button -> {
+		buyButton = Button.builder(isBinAuction ? Component.translatable("skyblocker.fancyAuctionHouse.buy") : Component.translatable("skyblocker.fancyAuctionHouse.bid"), _ -> {
 			if (buySlotID == -1) return;
 			clickSlot(buySlotID);
 		}).size(60, 15).build();
@@ -82,7 +82,7 @@ public class AuctionViewScreen extends AbstractCustomHypixelGUI<AuctionHouseScre
 		verticalLayout.visitWidgets(this::addRenderableWidget);
 		updateLayout();
 
-		Button backButton = new Button.Builder(Component.literal("<"), button -> this.clickSlot(BACK_BUTTON_SLOT))
+		Button backButton = new Button.Builder(Component.literal("<"), _ -> this.clickSlot(BACK_BUTTON_SLOT))
 				.pos(leftPos + imageWidth - 16, topPos + 4)
 				.size(12, 12)
 				.tooltip(Tooltip.create(Component.literal("or press ESC!")))
@@ -142,13 +142,14 @@ public class AuctionViewScreen extends AbstractCustomHypixelGUI<AuctionHouseScre
 	}
 
 	@Override
-	protected void renderBg(GuiGraphicsExtractor graphics, float delta, int mouseX, int mouseY) {
+	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+		super.extractBackground(graphics, mouseX, mouseY, a);
 		graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND_TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
 	}
 
 	@Override
-	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		super.extractRenderState(graphics, mouseX, mouseY, delta);
+	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+		super.extractRenderState(graphics, mouseX, mouseY, a);
 
 		if (isWaitingForServer) graphics.text(font, "Waiting...", 0, 0, CommonColors.WHITE, true);
 
@@ -171,12 +172,12 @@ public class AuctionViewScreen extends AbstractCustomHypixelGUI<AuctionHouseScre
 			}
 		}
 
-		renderTooltip(graphics, mouseX, mouseY);
+		extractTooltip(graphics, mouseX, mouseY);
 	}
 
 	@Override
-	protected void renderTooltip(GuiGraphicsExtractor graphics, int x, int y) {
-		super.renderTooltip(graphics, x, y);
+	protected void extractTooltip(GuiGraphicsExtractor graphics, int x, int y) {
+		super.extractTooltip(graphics, x, y);
 		if (x > this.leftPos + 75 && x < this.leftPos + 75 + 26 && y > this.topPos + 13 && y < this.topPos + 13 + 26) {
 			graphics.setComponentTooltipForNextFrame(this.font, this.getTooltipFromContainerItem(menu.getSlot(13).getItem()), x, y);
 		}
@@ -235,7 +236,7 @@ public class AuctionViewScreen extends AbstractCustomHypixelGUI<AuctionHouseScre
 		AtomicReference<String> stringAtomicReference = new AtomicReference<>("");
 
 		for (Component text : tooltip) {
-			String string = text.getString();
+			String string = ChatFormatting.stripFormatting(text.getString());
 			String thingToLookFor = (isBinAuction) ? "price:" : "new bid:";
 			String lowerCase = string.toLowerCase(Locale.ENGLISH);
 			if (lowerCase.contains(thingToLookFor)) {
@@ -281,13 +282,13 @@ public class AuctionViewScreen extends AbstractCustomHypixelGUI<AuctionHouseScre
 		// This really shouldn't be possible to be null in its ACTUAL use case.
 		//noinspection DataFlowIssue
 		return new PopupScreen.Builder(this, title)
-				.addButton(Component.translatable("text.skyblocker.confirm"), popupScreen -> this.minecraft.gameMode.handleInventoryMouseClick(this.minecraft.player.containerMenu.containerId, 11, 0, ClickType.PICKUP, minecraft.player))
+				.addButton(Component.translatable("text.skyblocker.confirm"), _ -> this.minecraft.gameMode.handleContainerInput(this.minecraft.player.containerMenu.containerId, 11, 0, ContainerInput.PICKUP, minecraft.player))
 				.addButton(Component.translatable("gui.cancel"), PopupScreen::onClose)
-				.setMessage((isBinAuction ? Component.translatable("skyblocker.fancyAuctionHouse.price") : Component.translatable("skyblocker.fancyAuctionHouse.newBid")).append(" ").append(priceText))
+				.addMessage((isBinAuction ? Component.translatable("skyblocker.fancyAuctionHouse.price") : Component.translatable("skyblocker.fancyAuctionHouse.newBid")).append(" ").append(priceText))
 				.onClose(() -> {
 					// This really shouldn't be possible to be null in its ACTUAL use case.
 					//noinspection DataFlowIssue
-					this.minecraft.gameMode.handleInventoryMouseClick(this.minecraft.player.containerMenu.containerId, 15, 0, ClickType.PICKUP, minecraft.player);
+					this.minecraft.gameMode.handleContainerInput(this.minecraft.player.containerMenu.containerId, 15, 0, ContainerInput.PICKUP, minecraft.player);
 				})
 				.build();
 	}

@@ -29,8 +29,8 @@ public class PowderFilterConfigScreen extends Screen {
 
 	@Override
 	protected void init() {
-		addRenderableOnly((graphics, mouseX, mouseY, delta) -> {
-			graphics.centeredText(minecraft.font, Component.translatable("skyblocker.config.mining.crystalHollows.powderTrackerFilter.screenTitle").withStyle(ChatFormatting.BOLD), width / 2, (32 - minecraft.font.lineHeight) / 2, CommonColors.WHITE);
+		addRenderableOnly((context, _, _, _) -> {
+			context.centeredText(minecraft.font, Component.translatable("skyblocker.config.mining.crystalHollows.powderTrackerFilter.screenTitle").withStyle(ChatFormatting.BOLD), width / 2, (32 - minecraft.font.lineHeight) / 2, CommonColors.WHITE);
 		});
 		ItemTickList<String> itemTickList = addRenderableWidget(new ItemTickList<>(Minecraft.getInstance(), width, height - 96, 32, 24, filters, allItems).init());
 		//Grid code gratuitously stolen from WaypointsScreen. Same goes for the y and heights above.
@@ -38,16 +38,16 @@ public class PowderFilterConfigScreen extends Screen {
 		gridWidget.defaultCellSetting().paddingHorizontal(5).paddingVertical(2);
 		GridLayout.RowHelper adder = gridWidget.createRowHelper(2);
 
-		adder.addChild(Button.builder(Component.translatable("text.skyblocker.reset"), button -> {
+		adder.addChild(Button.builder(Component.translatable("text.skyblocker.reset"), _ -> {
 			filters.clear();
 			itemTickList.clearAndInit();
 		}).build());
-		adder.addChild(Button.builder(Component.translatable("text.skyblocker.undo"), button -> {
+		adder.addChild(Button.builder(Component.translatable("text.skyblocker.undo"), _ -> {
 			filters.clear();
 			filters.addAll(SkyblockerConfigManager.get().mining.crystalHollows.powderTrackerFilter);
 			itemTickList.clearAndInit();
 		}).build());
-		adder.addChild(Button.builder(CommonComponents.GUI_DONE, button -> {
+		adder.addChild(Button.builder(CommonComponents.GUI_DONE, _ -> {
 								saveFilters();
 								onClose();
 							})

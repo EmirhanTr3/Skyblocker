@@ -18,6 +18,7 @@ import de.hysky.skyblocker.config.SkyblockerConfigManager;
 import de.hysky.skyblocker.skyblock.itemlist.ItemRepository;
 import de.hysky.skyblocker.utils.Area;
 import de.hysky.skyblocker.utils.Constants;
+import de.hysky.skyblocker.utils.FlexibleItemStack;
 import de.hysky.skyblocker.utils.Formatters;
 import de.hysky.skyblocker.utils.ItemUtils;
 import de.hysky.skyblocker.utils.NEURepoManager;
@@ -51,12 +52,12 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 public class VisitorHelper extends AbstractWidget {
 	private static final Set<Visitor> activeVisitors = new HashSet<>();
-	private static final Map<String, ItemStack> cachedItems = new HashMap<>();
+	private static final Map<String, FlexibleItemStack> cachedItems = new HashMap<>();
 	// Map of grouped items with their total amount and associated visitors
 	private static final Object2IntMap<Component> groupedItems = new Object2IntOpenHashMap<>();
 	private static final Map<Component, List<Visitor>> visitorsByItem = new LinkedHashMap<>();
@@ -80,15 +81,15 @@ public class VisitorHelper extends AbstractWidget {
 
 	@Init
 	public static void initialize() {
-		ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+		ScreenEvents.AFTER_INIT.register((_, screen, _, _) -> {
 			if (!(screen instanceof AbstractContainerScreen<?> handledScreen) || !shouldRender()) return;
 
 			processVisitor = true;
-			ScreenEvents.afterTick(screen).register(_screen -> updateVisitors(handledScreen.getMenu()));
-			Screens.getButtons(screen).add(new VisitorHelper(xOffset, yOffset));
+			ScreenEvents.afterTick(screen).register(_ -> updateVisitors(handledScreen.getMenu()));
+			Screens.getWidgets(screen).add(new VisitorHelper(xOffset, yOffset));
 		});
 
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _buildContext) ->
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) ->
 				dispatcher.register(literal(SkyblockerMod.NAMESPACE).then(literal("garden").then(literal("visitors")
 						.then(literal("removeAll").executes(ctx -> {
 							activeVisitors.clear();
@@ -107,7 +108,7 @@ public class VisitorHelper extends AbstractWidget {
 							updateItems();
 							ctx.getSource().sendFeedback(Constants.PREFIX.get().append(Component.translatableEscape("skyblocker.farming.visitorHelper.command.removedVisitor", visitor.get().name())));
 							return Command.SINGLE_SUCCESS;
-						}).suggests((ctx, builder) -> SharedSuggestionProvider.suggest(activeVisitors.stream().map(Visitor::name).map(Component::getString), builder))))
+						}).suggests((_, builder) -> SharedSuggestionProvider.suggest(activeVisitors.stream().map(Visitor::name).map(Component::getString), builder))))
 				))));
 	}
 
@@ -153,6 +154,7 @@ public class VisitorHelper extends AbstractWidget {
 
 		acceptButton.skyblocker$getLoreStrings().stream()
 				.map(String::trim)
+				.map(ChatFormatting::stripFormatting)
 				.dropWhile(lore -> !lore.contains("Items Required")) // All lines before Items Required (shouldn't be any, but you never know)
 				.skip(1) // skip the Items Required line
 				.takeWhile(lore -> !lore.isEmpty()) // All lines until the blank line before Rewards
@@ -175,7 +177,7 @@ public class VisitorHelper extends AbstractWidget {
 				int amount = entry.getIntValue();
 
 				groupedItems.put(itemName, groupedItems.getOrDefault(itemName, 0) + amount);
-				visitorsByItem.computeIfAbsent(itemName, k -> new LinkedList<>()).add(visitor);
+				visitorsByItem.computeIfAbsent(itemName, _ -> new LinkedList<>()).add(visitor);
 			}
 		}
 	}
@@ -183,9 +185,9 @@ public class VisitorHelper extends AbstractWidget {
 	/**
 	 * Retrieves a cached ItemStack or fetches it if not already cached.
 	 */
-	private static ItemStack getCachedItem(String itemName) {
+	private static FlexibleItemStack getCachedItem(String itemName) {
 		String cleanName = ChatFormatting.stripFormatting(itemName);
-		return cachedItems.computeIfAbsent(cleanName, name -> {
+		return cachedItems.computeIfAbsent(cleanName, _ -> {
 			if (NEURepoManager.isLoading() || !ItemRepository.filesImported()) return ItemUtils.getNamedPlaceholder(itemName);
 
 			return NEURepoManager.getItemByName(itemName)
@@ -200,7 +202,7 @@ public class VisitorHelper extends AbstractWidget {
 	/**
 	 * Draws the visitor items and their associated information.
 	 */
-	public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
+	public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		if (activeVisitors.isEmpty()) return;
 
 		Font textRenderer = Minecraft.getInstance().font;
@@ -237,7 +239,7 @@ public class VisitorHelper extends AbstractWidget {
 			int textX = iconX + (int) (ICON_SIZE * 0.95f) + 4;
 			int yPosition = y + index * (LINE_HEIGHT + textRenderer.lineHeight);
 
-			ItemStack cachedStack = getCachedItem(itemName.getString());
+			ItemStack cachedStack = getCachedItem(itemName.getString()).getStackOrThrow();
 			graphics.pose().pushMatrix();
 			graphics.pose().translate(iconX, yPosition + (float) textRenderer.lineHeight / 2 - ICON_SIZE * 0.95f / 2);
 			graphics.pose().scale(0.95f, 0.95f);
@@ -259,7 +261,7 @@ public class VisitorHelper extends AbstractWidget {
 			}
 			newWidth = Math.max(newWidth, textX + textRenderer.width(itemText) - x);
 
-			drawTextWithHoverUnderline(graphics, textRenderer, itemText, textX, yPosition, mouseX, mouseY);
+			extractTextWithHoverUnderline(graphics, textRenderer, itemText, textX, yPosition, mouseX, mouseY);
 
 			index++;
 		}
@@ -334,7 +336,7 @@ public class VisitorHelper extends AbstractWidget {
 		updateItems();
 	}
 
-	private static void drawTextWithHoverUnderline(GuiGraphicsExtractor graphics, Font textRenderer, Component text, int x, int y, double mouseX, double mouseY) {
+	private static void extractTextWithHoverUnderline(GuiGraphicsExtractor graphics, Font textRenderer, Component text, int x, int y, double mouseX, double mouseY) {
 		graphics.text(textRenderer, text, x, y, CommonColors.WHITE, true);
 
 		if (isMouseOverText(textRenderer, text, x, y, mouseX, mouseY)) {

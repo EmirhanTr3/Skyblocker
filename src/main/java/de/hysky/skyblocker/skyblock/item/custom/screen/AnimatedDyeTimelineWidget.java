@@ -16,6 +16,7 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
+import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -43,7 +44,7 @@ public class AnimatedDyeTimelineWidget extends AbstractContainerWidget implement
 	private @Nullable AnimatedDyeTimelineWidget.KeyframeWidget focusedFrame = null;
 
 	public AnimatedDyeTimelineWidget(int x, int y, int width, int height, FrameCallback frameCallback) {
-		super(x, y, width, height, Component.literal("Animated Dye Timeline"));
+		super(x, y, width, height, Component.literal("Animated Dye Timeline"), AbstractScrollArea.defaultSettings(4));
 		createImage(width, height);
 		this.frameCallback = frameCallback;
 	}
@@ -77,7 +78,7 @@ public class AnimatedDyeTimelineWidget extends AbstractContainerWidget implement
 	}
 
 	@Override
-	protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		graphics.blit(RenderPipelines.GUI_TEXTURED,
 				GRADIENT_TEXTURE,
 				getX() + HORIZONTAL_MARGIN,
@@ -89,7 +90,7 @@ public class AnimatedDyeTimelineWidget extends AbstractContainerWidget implement
 				textureWidth, textureHeight
 		);
 		for (KeyframeWidget frame : keyframes) {
-			frame.extractRenderState(graphics, mouseX, mouseY, delta);
+			frame.extractRenderState(graphics, mouseX, mouseY, a);
 		}
 	}
 
@@ -197,9 +198,9 @@ public class AnimatedDyeTimelineWidget extends AbstractContainerWidget implement
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 			graphics.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), color);
-			GuiHelper.drawBorder(graphics, getX(), getY(), getWidth(), getHeight(), isFocused() ? -1 : CommonColors.GRAY);
+			GuiHelper.border(graphics, getX(), getY(), getWidth(), getHeight(), isFocused() ? -1 : CommonColors.GRAY);
 		}
 
 		@Override

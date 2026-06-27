@@ -56,9 +56,9 @@ public class BackpackPreview {
 
 	@Init
 	public static void init() {
-		ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+		ScreenEvents.AFTER_INIT.register((_, screen, _, _) -> {
 			if (screen instanceof AbstractContainerScreen<?> handledScreen) {
-				ScreenEvents.remove(screen).register(screen1 -> updateStorage(handledScreen));
+				ScreenEvents.remove(screen).register(_ -> updateStorage(handledScreen));
 			}
 		});
 	}
@@ -143,7 +143,7 @@ public class BackpackPreview {
 		}
 	}
 
-	public static boolean renderPreview(GuiGraphicsExtractor graphics, Screen screen, int index, int mouseX, int mouseY) {
+	public static boolean extractPreview(GuiGraphicsExtractor graphics, Screen screen, int index, int mouseX, int mouseY) {
 		if (index >= 9 && index < 18) index -= 9;
 		else if (index >= 27 && index < 45) index -= 18;
 		else return false;
@@ -173,7 +173,7 @@ public class BackpackPreview {
 
 			graphics.item(currentStack, itemX, itemY);
 			graphics.itemDecorations(textRenderer, currentStack, itemX, itemY);
-			SlotTextManager.renderSlotText(graphics, textRenderer, null, currentStack, i, itemX, itemY);
+			SlotTextManager.extractSlotText(graphics, textRenderer, null, currentStack, i, itemX, itemY);
 		}
 
 		return true;

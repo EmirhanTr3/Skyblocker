@@ -45,7 +45,7 @@ public class ProfileViewerTextWidget {
 			this.SKYBLOCK_LEVEL = playerProfile.getAsJsonObject("leveling").get("experience").getAsInt() / 100;
 			this.PURSE = playerProfile.getAsJsonObject("currencies").get("coin_purse").getAsDouble();
 			this.BANK = hypixelProfile.getAsJsonObject("banking").get("balance").getAsDouble();
-		} catch (Exception ignored) {}
+		} catch (Exception _) {}
 
 		this.NETWORTH = PURSE + BANK + getItemsNetworth(playerProfile);
 		this.MAGICAL_POWER = getMagicalPower(playerProfile);
@@ -100,7 +100,7 @@ public class ProfileViewerTextWidget {
 					accessories.put(name, item.getSkyblockRarity().getMP());
 				}
 			}
-		} catch (Exception ignored) {
+		} catch (Exception _) {
 			return -1;
 		}
 
@@ -161,7 +161,7 @@ public class ProfileViewerTextWidget {
 			for (ItemStack stack : new PetsInventoryItemLoader().loadItems(playerProfile)) {
 				value += addItemNetworth(top, stack);
 			}
-		} catch (Exception ignored) {}
+		} catch (Exception _) {}
 
 		List<ItemValue> list = new ArrayList<>(top);
 		list.sort(Comparator.comparingDouble(ItemValue::price).reversed());
@@ -190,7 +190,7 @@ public class ProfileViewerTextWidget {
 		matrices.scale(0.75f, 0.75f);
 		int rootAdjustedX = (int) ((root_x) / 0.75f);
 		int rootAdjustedY = (int) ((root_y) / 0.75f);
-		graphics.item(Ico.PAINTING, rootAdjustedX, rootAdjustedY + 8);
+		graphics.item(Ico.PAINTING.getStackOrThrow(), rootAdjustedX, rootAdjustedY + 8);
 		matrices.popMatrix();
 
 		graphics.text(textRenderer, "§n" + PROFILE_NAME, root_x + 14, root_y + 7, CommonColors.WHITE, true);

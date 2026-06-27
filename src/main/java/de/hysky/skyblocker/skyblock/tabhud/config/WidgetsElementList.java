@@ -59,11 +59,11 @@ public class WidgetsElementList extends ContainerObjectSelectionList<WidgetsList
 	}
 
 	@Override
-	public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		super.renderWidget(graphics, mouseX, mouseY, delta);
+	public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		super.extractWidgetRenderState(graphics, mouseX, mouseY, delta);
 		WidgetsListEntry hoveredEntry = getHovered();
 		if (hoveredEntry != null) {
-			hoveredEntry.renderTooltip(graphics, hoveredEntry.getX(), hoveredEntry.getY(), hoveredEntry.getWidth(), hoveredEntry.getHeight(), mouseX, mouseY);
+			hoveredEntry.extractTooltip(graphics, hoveredEntry.getX(), hoveredEntry.getY(), hoveredEntry.getWidth(), hoveredEntry.getHeight(), mouseX, mouseY);
 		}
 		if (backButton != null) {
 			backButton.extractRenderState(graphics, mouseX, mouseY, delta);
@@ -80,8 +80,8 @@ public class WidgetsElementList extends ContainerObjectSelectionList<WidgetsList
 	}
 
 	@Override
-	protected void renderItem(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, WidgetsListEntry entry) {
-		super.renderItem(graphics, mouseX, mouseY, delta, entry);
+	protected void extractItem(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, WidgetsListEntry entry) {
+		super.extractItem(graphics, mouseX, mouseY, delta, entry);
 		if (!enableEditing || this.getSelected() != entry) return;
 
 		int x = entry.getX();

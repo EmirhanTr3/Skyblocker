@@ -39,17 +39,17 @@ public class WaypointsOptionScreen extends Screen {
 		UIAndVisualsConfig.Waypoints waypointsReadOnly = SkyblockerConfigManager.get().uiAndVisuals.waypoints;
 		adder.addChild(CycleButton
 				.booleanBuilder(CommonComponents.GUI_YES, CommonComponents.OPTION_OFF, waypointsReadOnly.renderLine)
-				.create(Component.translatable("skyblocker.config.uiAndVisuals.waypoints.renderLine"), (button, value) -> updateConfig(waypoints -> waypoints.renderLine = value))
+				.create(Component.translatable("skyblocker.config.uiAndVisuals.waypoints.renderLine"), (_, value) -> updateConfig(waypoints -> waypoints.renderLine = value))
 		);
 		adder.addChild(CycleButton
 				.booleanBuilder(CommonComponents.GUI_YES, CommonComponents.OPTION_OFF, waypointsReadOnly.allowSkippingWaypoints)
-				.withTooltip(ignored -> Tooltip.create(Component.translatable("skyblocker.config.uiAndVisuals.waypoints.allowSkippingWaypoints.@Tooltip")))
-				.create(Component.translatable("skyblocker.config.uiAndVisuals.waypoints.allowSkippingWaypoints"), (button, value) -> updateConfig(waypoints -> waypoints.allowSkippingWaypoints = value))
+				.withTooltip(_ -> Tooltip.create(Component.translatable("skyblocker.config.uiAndVisuals.waypoints.allowSkippingWaypoints.@Tooltip")))
+				.create(Component.translatable("skyblocker.config.uiAndVisuals.waypoints.allowSkippingWaypoints"), (_, value) -> updateConfig(waypoints -> waypoints.allowSkippingWaypoints = value))
 		);
 		adder.addChild(CycleButton
 				.booleanBuilder(CommonComponents.GUI_YES, CommonComponents.OPTION_OFF, waypointsReadOnly.allowGoingBackwards)
-				.withTooltip(ignored -> Tooltip.create(Component.translatable("skyblocker.config.uiAndVisuals.waypoints.allowGoingBackwards.@Tooltip")))
-				.create(Component.translatable("skyblocker.config.uiAndVisuals.waypoints.allowGoingBackwards"), (button, value) -> updateConfig(waypoints -> waypoints.allowGoingBackwards = value))
+				.withTooltip(_ -> Tooltip.create(Component.translatable("skyblocker.config.uiAndVisuals.waypoints.allowGoingBackwards.@Tooltip")))
+				.create(Component.translatable("skyblocker.config.uiAndVisuals.waypoints.allowGoingBackwards"), (_, value) -> updateConfig(waypoints -> waypoints.allowGoingBackwards = value))
 		);
 		adder.addChild(RangedSliderWidget.builder()
 				.optionFormatter(Component.translatable("skyblocker.config.uiAndVisuals.waypoints.lineWidth"), Formatters.FLOAT_NUMBERS)
@@ -83,7 +83,7 @@ public class WaypointsOptionScreen extends Screen {
 		colorPickerWidget.setARGBColor(waypointsReadOnly.lineColor.getRGB());
 		argbTextInput.setARGBColor(waypointsReadOnly.lineColor.getRGB());
 		layout.addToHeader(new StringWidget(getTitle(), font));
-		layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, b -> onClose()).build());
+		layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, _ -> onClose()).build());
 		repositionElements();
 		layout.visitWidgets(this::addRenderableWidget);
 	}
@@ -100,6 +100,6 @@ public class WaypointsOptionScreen extends Screen {
 	@Override
 	public void onClose() {
 		minecraft.setScreen(parent);
-		SkyblockerConfigManager.update(_config -> {});
+		SkyblockerConfigManager.update(_ -> {});
 	}
 }

@@ -15,7 +15,7 @@ public class LowerSensitivity {
 
 	@Init
 	public static void init() {
-		ClientTickEvents.END_WORLD_TICK.register(world -> {
+		ClientTickEvents.END_LEVEL_TICK.register(_ -> {
 			if (Utils.getLocation() != Location.GARDEN || CLIENT.player == null || isInBarn(CLIENT.player) || !SkyblockerConfigManager.get().farming.mouseLock.lockMouseTool) {
 				if (sensitivityLowered) lowerSensitivity(false);
 				return;

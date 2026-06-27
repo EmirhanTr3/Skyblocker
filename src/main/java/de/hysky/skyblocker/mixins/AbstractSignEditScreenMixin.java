@@ -1,6 +1,5 @@
 package de.hysky.skyblocker.mixins;
 
-
 import com.llamalad7.mixinextras.sugar.Local;
 import de.hysky.skyblocker.config.SkyblockerConfigManager;
 import de.hysky.skyblocker.skyblock.bazaar.BazaarQuickQuantities;
@@ -49,7 +48,7 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
 	}
 
 	@Inject(method = "extractRenderState", at = @At("HEAD"))
-	private void skyblocker$extractRenderStateSign(CallbackInfo ci, @Local(argsOnly = true) GuiGraphicsExtractor graphics) {
+	private void skyblocker$extractRenderStateSign(CallbackInfo ci, @Local(name = "graphics") GuiGraphicsExtractor graphics) {
 		if (Utils.isOnSkyblock()) {
 			var config = SkyblockerConfigManager.get();
 			if (isSpeedInputSign() && config.general.speedPresets.enableSpeedPresets) {

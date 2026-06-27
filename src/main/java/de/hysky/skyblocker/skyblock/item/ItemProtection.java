@@ -6,12 +6,13 @@ import de.hysky.skyblocker.SkyblockerMod;
 import de.hysky.skyblocker.annotations.Init;
 import de.hysky.skyblocker.config.SkyblockerConfigManager;
 import de.hysky.skyblocker.utils.Constants;
+import de.hysky.skyblocker.utils.ItemUtils;
 import de.hysky.skyblocker.utils.Location;
 import de.hysky.skyblocker.utils.Utils;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -26,6 +27,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -38,7 +41,7 @@ public class ItemProtection {
 
 	@Init
 	public static void init() {
-		itemProtection = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+		itemProtection = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 				"key.skyblocker.itemProtection",
 				GLFW.GLFW_KEY_V,
 				SkyblockerMod.KEYBINDING_CATEGORY
@@ -48,9 +51,7 @@ public class ItemProtection {
 	}
 
 	public static void drawSlotIcon(GuiGraphicsExtractor graphics, int slotX, int slotY) {
-		if (SkyblockerConfigManager.get().general.itemProtection.displayItemStarIcon) {
-			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ItemProtection.ITEM_PROTECTION_TEX, slotX, slotY, 16, 16);
-		}
+		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ItemProtection.ITEM_PROTECTION_TEX, slotX, slotY, 16, 16);
 	}
 
 	public static boolean isItemProtected(@Nullable ItemStack stack) {
@@ -60,8 +61,8 @@ public class ItemProtection {
 	}
 
 	private static void registerCommand(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
-		dispatcher.register(ClientCommandManager.literal("skyblocker")
-				.then(ClientCommandManager.literal("protectItem")
+		dispatcher.register(ClientCommands.literal("skyblocker")
+				.then(ClientCommands.literal("protectItem")
 						.executes(context -> protectMyItem(context.getSource()))));
 	}
 
@@ -97,12 +98,12 @@ public class ItemProtection {
 			return;
 		}
 		if (!Utils.isOnSkyblock()) {
-			playerEntity.displayClientMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.itemProtection.unableToProtect")), false);
+			playerEntity.sendSystemMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.itemProtection.unableToProtect")));
 			return;
 		}
 
 		if (heldItem.isEmpty()) {
-			playerEntity.displayClientMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.itemProtection.noItemUuid")), false);
+			playerEntity.sendSystemMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.itemProtection.noItemUuid")));
 			return;
 		}
 
@@ -112,16 +113,16 @@ public class ItemProtection {
 			if (!SkyblockerConfigManager.get().general.protectedItems.contains(itemUuid)) {
 				SkyblockerConfigManager.update(config -> config.general.protectedItems.add(itemUuid));
 				if (notifyConfiguration) {
-					playerEntity.displayClientMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.itemProtection.added", heldItem.getHoverName())), false);
+					playerEntity.sendSystemMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.itemProtection.added", heldItem.getHoverName())));
 				}
 			} else {
 				SkyblockerConfigManager.update(config -> config.general.protectedItems.remove(itemUuid));
 				if (notifyConfiguration) {
-					playerEntity.displayClientMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.itemProtection.removed", heldItem.getHoverName())), false);
+					playerEntity.sendSystemMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.itemProtection.removed", heldItem.getHoverName())));
 				}
 			}
 		} else {
-			playerEntity.displayClientMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.itemProtection.noItemUuid")), false);
+			playerEntity.sendSystemMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.itemProtection.noItemUuid")));
 		}
 	}
 
@@ -130,6 +131,22 @@ public class ItemProtection {
 			ItemStack heldItem = player.getMainHandItem();
 			handleKeyPressed(heldItem);
 		}
+	}
+
+	public static boolean isNpcSellMenu(AbstractContainerMenu menu) {
+		for (Slot slot : menu.slots) {
+			ItemStack stack = slot.getItem();
+			if (stack.isEmpty()) continue;
+			String name = stack.getHoverName().getString();
+			if (name.equals("Sell Item") || name.equals("Sell Inventory")) return true;
+			if (ItemUtils.getLoreLineIf(stack, text -> text.contains("buyback")) != null) return true;
+		}
+		return false;
+	}
+
+	public static boolean isNpcSellButton(Slot slot) {
+		String name = slot.getItem().getHoverName().getString();
+		return name.equals("Sell Item") || name.equals("Sell Inventory") || ItemUtils.getLoreLineIf(slot.getItem(), text -> text.contains("buyback")) != null;
 	}
 
 	private static InteractionResult onEntityInteract(Player playerEntity, Level world, InteractionHand hand, Entity entity, @Nullable EntityHitResult entityHitResult) {

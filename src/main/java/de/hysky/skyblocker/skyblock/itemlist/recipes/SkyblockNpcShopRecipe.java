@@ -3,6 +3,7 @@ package de.hysky.skyblocker.skyblock.itemlist.recipes;
 import de.hysky.skyblocker.SkyblockerMod;
 import de.hysky.skyblocker.skyblock.itemlist.ItemRepository;
 import de.hysky.skyblocker.skyblock.tabhud.util.Ico;
+import de.hysky.skyblocker.utils.FlexibleItemStack;
 import io.github.moulberry.repo.data.NEUNpcShopRecipe;
 
 import java.util.Collections;
@@ -12,15 +13,14 @@ import java.util.Locale;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public class SkyblockNpcShopRecipe implements CenteredRecipe {
 	public static final Identifier ID = SkyblockerMod.id("skyblock_npc_shop");
 
-	private final ItemStack npcShop;
-	private final List<ItemStack> inputs;
-	private final ItemStack output;
+	private final FlexibleItemStack npcShop;
+	private final List<FlexibleItemStack> inputs;
+	private final FlexibleItemStack output;
 
 	public SkyblockNpcShopRecipe(NEUNpcShopRecipe shopRecipe) {
 		npcShop = ItemRepository.getItemStack(shopRecipe.getIsSoldBy().getSkyblockItemId());
@@ -44,17 +44,17 @@ public class SkyblockNpcShopRecipe implements CenteredRecipe {
 	}
 
 	@Override
-	public ItemStack getRepresentative() {
+	public FlexibleItemStack getRepresentative() {
 		return npcShop;
 	}
 
 	@Override
-	public List<ItemStack> getInputs() {
+	public List<FlexibleItemStack> getInputs() {
 		return inputs;
 	}
 
 	@Override
-	public List<ItemStack> getOutputs() {
+	public List<FlexibleItemStack> getOutputs() {
 		return Collections.singletonList(output);
 	}
 
@@ -70,11 +70,11 @@ public class SkyblockNpcShopRecipe implements CenteredRecipe {
 
 	@Override
 	public Identifier getRecipeIdentifier() {
-		return Identifier.fromNamespaceAndPath("skyblock", output.getSkyblockId().toLowerCase(Locale.ENGLISH).replace(';', '_') + "_" + output.getCount());
+		return Identifier.fromNamespaceAndPath("skyblock", output.getSkyblockId().toLowerCase(Locale.ENGLISH).replace(';', '_') + "_" + output.count());
 	}
 
 	@Override
-	public ItemStack getIcon() {
+	public FlexibleItemStack getIcon() {
 		return Ico.GOLD_NUGGET;
 	}
 }

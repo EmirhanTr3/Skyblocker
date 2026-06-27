@@ -28,7 +28,7 @@ public class DungeonsPage implements ProfileViewerPage {
 		}
 	}
 
-	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, int rootX, int rootY) {
+	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, int rootX, int rootY) {
 		dungeonHeaderWidget.extractRenderState(graphics, rootX, rootY);
 		dungeonFloorRunsWidget.extractRenderState(graphics, mouseX, mouseY, rootX + 113, rootY + 56);
 		dungeonMiscStatsWidgets.extractRenderState(graphics, rootX + 113, rootY);

@@ -234,7 +234,7 @@ public class UIAndVisualsConfig {
 	}
 
 	public enum NameSorting {
-		DEFAULT((_a, _b) -> 0),
+		DEFAULT((_, _) -> 0),
 		ALPHABETICAL(Comparator.comparing(ple -> matchPlayerName(ple.getTabListDisplayName().getString(), "name").orElse(""), String.CASE_INSENSITIVE_ORDER)),
 		SKYBLOCK_LEVEL(Comparator.<PlayerInfo>comparingInt(ple -> matchPlayerName(ple.getTabListDisplayName().getString(), "level").map(Integer::parseInt).orElse(0)).reversed());
 
@@ -357,6 +357,8 @@ public class UIAndVisualsConfig {
 
 	public static class SmoothAOTE {
 		public boolean predictive = false;
+
+		public boolean thirdPerson = true;
 
 		public boolean enableWeirdTransmission = false;
 

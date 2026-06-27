@@ -24,9 +24,9 @@ public class FireFreezeStaffTimer {
 
 	@Init
 	public static void init() {
-		HudElementRegistry.attachElementAfter(VanillaHudElements.OVERLAY_MESSAGE, FIRE_FREEZE_STAFF_TIMER, FireFreezeStaffTimer::onDraw);
+		HudElementRegistry.attachElementAfter(VanillaHudElements.OVERLAY_MESSAGE, FIRE_FREEZE_STAFF_TIMER, FireFreezeStaffTimer::extractRenderState);
 		ClientReceiveMessageEvents.ALLOW_GAME.register(FireFreezeStaffTimer::onChatMessage);
-		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> FireFreezeStaffTimer.reset());
+		ClientPlayConnectionEvents.JOIN.register((_, _, _) -> FireFreezeStaffTimer.reset());
 		ServerTickCallback.EVENT.register(FireFreezeStaffTimer::onServerTick);
 	}
 
@@ -34,7 +34,7 @@ public class FireFreezeStaffTimer {
 		if (timerActive) fireFreezeTimer -= 50;
 	}
 
-	private static void onDraw(GuiGraphicsExtractor graphics, DeltaTracker tickCounter) {
+	private static void extractRenderState(GuiGraphicsExtractor graphics, DeltaTracker tickCounter) {
 		Minecraft client = Minecraft.getInstance();
 
 		if (client.screen != null) return;

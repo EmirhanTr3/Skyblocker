@@ -34,6 +34,8 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.phys.Vec3;
+
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -50,8 +52,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 import static net.minecraft.commands.SharedSuggestionProvider.suggest;
 
 /**
@@ -84,7 +86,7 @@ public class CrystalsLocationsManager {
 		ClientReceiveMessageEvents.ALLOW_GAME.register(CrystalsLocationsManager::extractLocationFromMessage);
 		ClientCommandRegistrationCallback.EVENT.register(CrystalsLocationsManager::registerWaypointLocationCommands);
 		SkyblockEvents.LOCATION_CHANGE.register(CrystalsLocationsManager::onLocationChange);
-		ClientPlayConnectionEvents.JOIN.register((_handler, _sender, _client) -> reset());
+		ClientPlayConnectionEvents.JOIN.register((_, _, _) -> reset());
 
 		// Nucleus Waypoints
 		LevelRenderExtractionCallback.EVENT.register(NucleusWaypoints::extractRendering);
@@ -128,7 +130,7 @@ public class CrystalsLocationsManager {
 						return true;
 					}
 
-					CLIENT.player.displayClientMessage(getLocationMenu(location, false), false);
+					CLIENT.player.sendSystemMessage(getLocationMenu(location, false));
 				}
 			}
 
@@ -163,42 +165,42 @@ public class CrystalsLocationsManager {
 		dispatcher.register(literal(SkyblockerMod.NAMESPACE)
 				.then(literal("crystalWaypoints")
 						.then(literal("add")
-								.executes(context -> {
+								.executes(_ -> {
 									if (CLIENT.player == null) {
 										return 0;
 									}
-									CLIENT.player.displayClientMessage(getLocationMenu((int) CLIENT.player.getX() + " " + (int) CLIENT.player.getY() + " " + (int) CLIENT.player.getZ(), true), false);
+									CLIENT.player.sendSystemMessage(getLocationMenu((int) CLIENT.player.getX() + " " + (int) CLIENT.player.getY() + " " + (int) CLIENT.player.getZ(), true));
 									return Command.SINGLE_SUCCESS;
 								})
 								.then(argument("pos", ClientBlockPosArgumentType.blockPos())
 										.then(argument("place", StringArgumentType.greedyString())
-												.suggests((context, builder) -> suggest(WAYPOINT_LOCATIONS.keySet(), builder))
+												.suggests((_, builder) -> suggest(WAYPOINT_LOCATIONS.keySet(), builder))
 												.executes(context -> addWaypointFromCommand(context.getSource(), getString(context, "place"), context.getArgument("pos", ClientPosArgument.class)))
 										)
 								))
 						.then(literal("share")
-								.executes(context -> {
+								.executes(_ -> {
 									if (CLIENT.player == null) {
 										return 0;
 									}
-									CLIENT.player.displayClientMessage(getPlacesMenu("share"), false);
+									CLIENT.player.sendSystemMessage(getPlacesMenu("share"));
 									return Command.SINGLE_SUCCESS;
 								})
 								.then(argument("place", StringArgumentType.greedyString())
-										.suggests((context, builder) -> suggest(WAYPOINT_LOCATIONS.keySet(), builder))
+										.suggests((_, builder) -> suggest(WAYPOINT_LOCATIONS.keySet(), builder))
 										.executes(context -> shareWaypoint(getString(context, "place")))
 								)
 						)
 						.then(literal("remove")
-								.executes(context -> {
+								.executes(_ -> {
 									if (CLIENT.player == null) {
 										return 0;
 									}
-									CLIENT.player.displayClientMessage(getPlacesMenu("remove"), false);
+									CLIENT.player.sendSystemMessage(getPlacesMenu("remove"));
 									return Command.SINGLE_SUCCESS;
 								})
 								.then(argument("place", StringArgumentType.greedyString())
-										.suggests((context, builder) -> suggest(WAYPOINT_LOCATIONS.keySet(), builder))
+										.suggests((_, builder) -> suggest(WAYPOINT_LOCATIONS.keySet(), builder))
 										.executes(context -> removeWaypoint(getString(context, "place")))
 								)
 						)
@@ -294,7 +296,7 @@ public class CrystalsLocationsManager {
 				return 0;
 			}
 
-			CLIENT.player.displayClientMessage(getSetLocationMessage(place, blockPos), false);
+			CLIENT.player.sendSystemMessage(getSetLocationMessage(place, blockPos));
 		}
 
 		return Command.SINGLE_SUCCESS;
@@ -309,7 +311,7 @@ public class CrystalsLocationsManager {
 			if (CLIENT.player == null || CLIENT.getConnection() == null) {
 				return 0;
 			}
-			CLIENT.player.displayClientMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.config.mining.crystalsWaypoints.shareFail").withStyle(ChatFormatting.RED)), false);
+			CLIENT.player.sendSystemMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.config.mining.crystalsWaypoints.shareFail").withStyle(ChatFormatting.RED)));
 		}
 
 		return Command.SINGLE_SUCCESS;
@@ -320,12 +322,12 @@ public class CrystalsLocationsManager {
 			return 0;
 		}
 		if (activeWaypoints.containsKey(place)) {
-			CLIENT.player.displayClientMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.config.mining.crystalsWaypoints.removeSuccess").withStyle(ChatFormatting.GREEN)).append(Component.literal(place).withColor(WAYPOINT_LOCATIONS.get(place).getColor())), false);
+			CLIENT.player.sendSystemMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.config.mining.crystalsWaypoints.removeSuccess").withStyle(ChatFormatting.GREEN)).append(Component.literal(place).withColor(WAYPOINT_LOCATIONS.get(place).getColor())));
 			activeWaypoints.remove(place);
 			verifiedWaypoints.remove(place);
 		} else {
 			//send fail message
-			CLIENT.player.displayClientMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.config.mining.crystalsWaypoints.removeFail").withStyle(ChatFormatting.RED)), false);
+			CLIENT.player.sendSystemMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.config.mining.crystalsWaypoints.removeFail").withStyle(ChatFormatting.RED)));
 		}
 
 		return Command.SINGLE_SUCCESS;
@@ -354,7 +356,7 @@ public class CrystalsLocationsManager {
 
 		if (!shouldSend) return;
 		assert CLIENT.player != null;
-		CLIENT.player.displayClientMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.webSocket.receivedCrystalsWaypoint", receivedWaypointNames)), false);
+		CLIENT.player.sendSystemMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.webSocket.receivedCrystalsWaypoint", receivedWaypointNames)));
 	}
 
 	protected static void addCustomWaypoint(String waypointName, BlockPos pos) {
@@ -373,7 +375,7 @@ public class CrystalsLocationsManager {
 		String name = MiningLocationLabel.CrystalHollowsLocationsCategory.UNKNOWN.getName();
 		MiningLocationLabel unknownWaypoint = activeWaypoints.getOrDefault(name, null);
 		if (unknownWaypoint != null) {
-			double distance = unknownWaypoint.centerPos.distanceTo(location.getCenter());
+			double distance = unknownWaypoint.centerPos.distanceTo(Vec3.atCenterOf(location));
 			if (distance < REMOVE_UNKNOWN_DISTANCE) {
 				activeWaypoints.remove(name);
 			}

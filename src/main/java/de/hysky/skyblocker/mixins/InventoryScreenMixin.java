@@ -45,7 +45,7 @@ public abstract class InventoryScreenMixin extends AbstractContainerScreen<Inven
 
 
 	@ModifyArg(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractRecipeBookScreen;<init>(Lnet/minecraft/world/inventory/RecipeBookMenu;Lnet/minecraft/client/gui/screens/recipebook/RecipeBookComponent;Lnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/network/chat/Component;)V"))
-	private static RecipeBookComponent<?> skyblocker$replaceRecipeBook(RecipeBookComponent<?> original, @Local(argsOnly = true) Player player) {
+	private static RecipeBookComponent<?> skyblocker$replaceRecipeBook(RecipeBookComponent<?> original, @Local(name = "player") Player player) {
 		return SkyblockerConfigManager.get().general.itemList.enableRecipeBook && Utils.isOnSkyblock() ? new SkyblockRecipeBookComponent(player.inventoryMenu) : original;
 	}
 
@@ -54,8 +54,8 @@ public abstract class InventoryScreenMixin extends AbstractContainerScreen<Inven
 		return Utils.isOnSkyblock() && SkyblockerConfigManager.get().uiAndVisuals.showEquipmentInInventory ? x + 21 : x;
 	}
 
-	@WrapWithCondition(method = "extractRenderState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/EffectsInInventory;render(Lnet/minecraft/client/gui/GuiGraphicsExtractor;II)V"))
-	private boolean skyblocker$dontDrawStatusEffects(EffectsInInventory statusEffectsDisplay, GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+	@WrapWithCondition(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/EffectsInInventory;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;II)V"))
+	private boolean skyblocker$dontExtractStatusEffects(EffectsInInventory statusEffectsDisplay, GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
 		return !(Utils.isOnSkyblock() && SkyblockerConfigManager.get().uiAndVisuals.hideStatusEffectOverlay || Utils.isInGarden() && SkyblockerConfigManager.get().farming.plotsWidget.enabled);
 	}
 
@@ -70,7 +70,7 @@ public abstract class InventoryScreenMixin extends AbstractContainerScreen<Inven
 		return original;
 	}
 
-	@ModifyExpressionValue(method = "renderBg", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;INVENTORY_LOCATION:Lnet/minecraft/resources/Identifier;", opcode = Opcodes.GETSTATIC))
+	@ModifyExpressionValue(method = "extractBackground", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;INVENTORY_LOCATION:Lnet/minecraft/resources/Identifier;", opcode = Opcodes.GETSTATIC))
 	private Identifier skyblocker$getBackground(Identifier original) {
 		// gotta do this, if I don't call super in SkyblockInventoryScreen quick nav doesn't get rendered
 		if (Utils.isOnSkyblock() && SkyblockerConfigManager.get().uiAndVisuals.showEquipmentInInventory) return SkyblockInventoryScreen.BACKGROUND.get();

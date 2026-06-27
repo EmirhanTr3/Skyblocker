@@ -26,10 +26,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.util.Comparator;
 import java.util.List;
@@ -73,13 +74,13 @@ public class GoldorWaypointsManager {
 		LevelRenderExtractionCallback.EVENT.register(GoldorWaypointsManager::extractRendering);
 		ClientLifecycleEvents.CLIENT_STARTED.register(GoldorWaypointsManager::load);
 		ClientReceiveMessageEvents.ALLOW_GAME.register(GoldorWaypointsManager::onChatMessage);
-		ClientPlayConnectionEvents.JOIN.register(((handler, sender, client) -> reset()));
+		ClientPlayConnectionEvents.JOIN.register(((_, _, _) -> reset()));
 	}
 
 	private static void load(Minecraft client) {
 		CompletableFuture<Void> terminals = loadWaypoints(client, SkyblockerMod.id("dungeons/goldorwaypoints.json"));
 
-		terminals.whenComplete((_result, _throwable) -> loaded = true);
+		terminals.whenComplete((_, _) -> loaded = true);
 	}
 
 	private static CompletableFuture<Void> loadWaypoints(Minecraft client, Identifier file) {
@@ -158,8 +159,7 @@ public class GoldorWaypointsManager {
 	 * @param matcher The matcher to extract the name from
 	 * @return The player name, or null if the matcher didn't match
 	 */
-	@Nullable
-	private static String getPlayerName(Matcher matcher) {
+	private static @Nullable String getPlayerName(Matcher matcher) {
 		return matcher.matches() ? matcher.group("name") : null;
 	}
 
@@ -252,7 +252,7 @@ public class GoldorWaypointsManager {
 		final int phase;
 
 		GoldorWaypoint(WaypointTargetKind kind, int phase, Component name, BlockPos pos) {
-			super(pos, name, TYPE_SUPPLIER, kind.colorComponents, 0.25F, true);
+			super(pos, name, TYPE_SUPPLIER, kind.colorComponents, 0.25f, true);
 			this.kind = kind;
 			this.phase = phase;
 		}
@@ -269,7 +269,7 @@ public class GoldorWaypointsManager {
 			private final float[] colorComponents;
 
 			WaypointTargetKind(int r, int g, int b) {
-				this.colorComponents = new float[]{r / 255F, g / 255F, b / 255F};
+				this.colorComponents = new float[]{r / 255f, g / 255f, b / 255f};
 			}
 
 			@Override

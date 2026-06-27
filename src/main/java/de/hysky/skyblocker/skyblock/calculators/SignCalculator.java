@@ -28,7 +28,7 @@ public class SignCalculator {
 		}
 		calculate(message);
 
-		render(graphics, message, renderX, renderY);
+		extract(graphics, message, renderX, renderY);
 	}
 
 	@VisibleForTesting
@@ -60,7 +60,7 @@ public class SignCalculator {
 		return Long.toString(Math.round(output));
 	}
 
-	private static void render(GuiGraphicsExtractor graphics, String input, int renderX, int renderY) {
+	private static void extract(GuiGraphicsExtractor graphics, String input, int renderX, int renderY) {
 		Component text;
 		if (output == -1) {
 			text = error != null ? error : Component.translatable("skyblocker.config.uiAndVisuals.inputCalculator.invalidEquation").withStyle(ChatFormatting.RED);

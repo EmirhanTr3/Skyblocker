@@ -56,8 +56,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 public class SkyblockerConfigManager {
 	public static final int CONFIG_VERSION = 10;
@@ -86,14 +86,14 @@ public class SkyblockerConfigManager {
 		dataFix(CONFIG_FILE, CONFIG_DIR.resolve("skyblocker.json.old"));
 
 		CONFIG_MANAGER.load();
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal(SkyblockerMod.NAMESPACE)
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> dispatcher.register(literal(SkyblockerMod.NAMESPACE)
 				.then(configLiteral("config"))
 				.then(configLiteral("options"))
 		));
-		ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+		ScreenEvents.AFTER_INIT.register((client, screen, _, _) -> {
 			if (get().uiAndVisuals.showConfigButton && screen instanceof ContainerScreen genericContainerScreen && screen.getTitle().getString().equals("SkyBlock Menu")) {
-				Screens.getButtons(screen).add(Button
-						.builder(Component.literal("\uD83D\uDD27"), buttonWidget -> client.setScreen(createGUI(screen)))
+				Screens.getWidgets(screen).add(Button
+						.builder(Component.literal("\uD83D\uDD27"), _ -> client.setScreen(createGUI(screen)))
 						.bounds(((AbstractContainerScreenAccessor) genericContainerScreen).getX() + ((AbstractContainerScreenAccessor) genericContainerScreen).getImageWidth() - 16, ((AbstractContainerScreenAccessor) genericContainerScreen).getY() + 4, 12, 12)
 						.tooltip(Tooltip.create(Component.translatable("skyblocker.config.title", Component.translatable("skyblocker.config.title.settings"))))
 						.build());
@@ -174,7 +174,7 @@ public class SkyblockerConfigManager {
 	 */
 	private static LiteralArgumentBuilder<FabricClientCommandSource> configLiteral(String name) {
 		return literal(name).executes(Scheduler.queueOpenScreenCommand(() -> createGUI(null)))
-				.then(argument("search", StringArgumentType.greedyString()).executes((ctx) -> Scheduler.queueOpenScreen(createGUI(null, ctx.getArgument("search", String.class)))));
+				.then(argument("search", StringArgumentType.greedyString()).executes(ctx -> Scheduler.queueOpenScreen(createGUI(null, ctx.getArgument("search", String.class)))));
 	}
 
 	/**

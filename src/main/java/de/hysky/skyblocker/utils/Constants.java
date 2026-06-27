@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
-
-import de.hysky.skyblocker.config.SkyblockerConfigManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -22,9 +20,7 @@ public interface Constants {
 	Pattern PLAYER_NAME = Pattern.compile("(?:\\[[0-9]+\\] )?(?:[" + Constants.LEVEL_EMBLEMS + "] )?(?:\\[[A-Z+]+\\] )?([A-Za-z0-9_]+)");
 
 	Supplier<MutableComponent> PREFIX = () -> {
-		if (!SkyblockerConfigManager.get().chat.chatPrefixConfig.toggle) {
-			return Component.empty();
-		} else if (FunUtils.shouldEnableFun()) {
+		if (FunUtils.shouldEnableFun()) {
 			return Component.empty().append(Component.literal("[").withStyle(ChatFormatting.GRAY))
 					.append(FunUtils.getRandomFunName())
 					.append(Component.literal("] ").withStyle(ChatFormatting.GRAY));
@@ -40,7 +36,7 @@ public interface Constants {
 
 		return Component.empty()
 				.append(Component.literal("[").withStyle(ChatFormatting.GRAY))
-				.append(createSkyblockerGradient(SkyblockerConfigManager.get().chat.chatPrefixConfig.prefix))
+				.append(createSkyblockerGradient("Skyblocker"))
 				.append(Component.literal("] ").withStyle(ChatFormatting.GRAY));
 	};
 

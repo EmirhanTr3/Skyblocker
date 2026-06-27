@@ -16,16 +16,16 @@ public class DefaultSlotEntry extends WidgetsListSlotEntry {
 
 	public DefaultSlotEntry(WidgetsListTab parent, int slotId, ItemStack icon) {
 		super(parent, slotId, icon);
-		leftClick = Button.builder(Component.literal("LEFT"), button -> this.parent.clickAndWaitForServer(this.slotId, 0))
+		leftClick = Button.builder(Component.literal("LEFT"), _ -> this.parent.clickAndWaitForServer(this.slotId, 0))
 				.size(32, 12)
 				.build();
-		rightClick = Button.builder(Component.literal("RIGHT"), button -> this.parent.clickAndWaitForServer(this.slotId, 1))
+		rightClick = Button.builder(Component.literal("RIGHT"), _ -> this.parent.clickAndWaitForServer(this.slotId, 1))
 				.size(32, 12)
 				.build();
 	}
 
 	@Override
-	public void renderTooltip(GuiGraphicsExtractor graphics, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY) {
+	public void extractTooltip(GuiGraphicsExtractor graphics, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY) {
 		if (mouseX >= x && mouseX <= x + entryWidth - 80 && mouseY >= y && mouseY <= y + entryHeight) {
 			@SuppressWarnings("deprecation")
 			List<Component> lore = ItemUtils.getLore(icon);
@@ -39,8 +39,8 @@ public class DefaultSlotEntry extends WidgetsListSlotEntry {
 	}
 
 	@Override
-	public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
-		renderIconAndText(graphics, this.getY(), this.getX(), this.getHeight());
+	public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		extractIconAndText(graphics, this.getY(), this.getX(), this.getHeight());
 		rightClick.setPosition(this.getX() + this.getWidth() - 40, this.getY() + (this.getHeight() - 12) / 2);
 		rightClick.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
 		leftClick.setPosition(this.getX() + this.getWidth() - 80, this.getY() + (this.getHeight() - 12) / 2);

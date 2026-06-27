@@ -35,7 +35,7 @@ import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 public class FarmingHud {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FarmingHud.class);
@@ -53,7 +53,7 @@ public class FarmingHud {
 
 	@Init
 	public static void init() {
-		ClientTickEvents.END_CLIENT_TICK.register(_minecraft -> {
+		ClientTickEvents.END_CLIENT_TICK.register(_ -> {
 			if (shouldRender()) {
 				if (!counter.isEmpty() && counter.peek().rightLong() + STATS_WINDOW < System.currentTimeMillis()) {
 					counter.poll();
@@ -72,7 +72,7 @@ public class FarmingHud {
 				}
 			}
 		});
-		ClientPlayerBlockBreakEvents.AFTER.register((world, player, pos, state) -> {
+		ClientPlayerBlockBreakEvents.AFTER.register((_, _, _, _) -> {
 			if (shouldRender()) {
 				blockBreaks.enqueue(System.currentTimeMillis());
 			}
@@ -104,7 +104,7 @@ public class FarmingHud {
 
 			return true;
 		});
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(literal(SkyblockerMod.NAMESPACE).then(literal("hud").then(literal("farming")
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> dispatcher.register(literal(SkyblockerMod.NAMESPACE).then(literal("hud").then(literal("farming")
 				.executes(Scheduler.queueOpenScreenCommand(() -> new WidgetsConfigurationScreen(Location.GARDEN, "hud_garden", null)))))));
 	}
 
@@ -127,8 +127,8 @@ public class FarmingHud {
 		return SkyblockerConfigManager.get().farming.farmingHud.enabled && client.player != null && Utils.getLocation() == Location.GARDEN;
 	}
 
-	public static String counterText() {
-		return counterType.text;
+	public static CounterType counterType() {
+		return counterType;
 	}
 
 	public static long counter() {
@@ -165,19 +165,15 @@ public class FarmingHud {
 	}
 
 	public enum CounterType {
-		NONE("", "No Cultivating"),
+		NONE("", "Cultivating Needed"),
 		CULTIVATING("farmed_cultivating", "Cultivating: ");
 
 		private final String nbtKey;
-		private final String text;
+		public final String text;
 
 		CounterType(String nbtKey, String text) {
 			this.nbtKey = nbtKey;
 			this.text = text;
-		}
-
-		public boolean matchesText(String textToMatch) {
-			return this.text.equals(textToMatch);
 		}
 	}
 }

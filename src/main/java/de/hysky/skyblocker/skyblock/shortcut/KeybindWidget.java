@@ -2,7 +2,6 @@ package de.hysky.skyblocker.skyblock.shortcut;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.GuiGraphicsExtractor.HoveredTextEffects;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.input.KeyEvent;
@@ -19,7 +18,7 @@ public class KeybindWidget extends Button {
 	}
 
 	protected KeybindWidget(ShortcutKeyBinding keyBinding, int x, int y, int width, int height, Component message, CreateNarration narrationSupplier, Runnable updateListener) {
-		this(keyBinding, x, y, width, height, message, button -> {}, narrationSupplier, updateListener);
+		this(keyBinding, x, y, width, height, message, _ -> {}, narrationSupplier, updateListener);
 	}
 
 	protected KeybindWidget(ShortcutKeyBinding keyBinding, int x, int y, int width, int height, Component message, OnPress onPress, CreateNarration narrationSupplier, Runnable updateListener) {
@@ -78,8 +77,8 @@ public class KeybindWidget extends Button {
 	}
 
 	@Override
-	protected void renderContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
-		this.renderDefaultSprite(graphics);
-		this.renderDefaultLabel(graphics.textRenderer(HoveredTextEffects.NONE));
+	protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+		this.extractDefaultSprite(graphics);
+		this.extractDefaultLabel(graphics.textRenderer(GuiGraphicsExtractor.HoveredTextEffects.NONE));
 	}
 }

@@ -78,7 +78,7 @@ public class TableElement extends Element {
 			int col = rowBorders[y];
 			if (col != 0) {
 				// shift slightly so the border does not clash with the widget outline
-				GuiHelper.drawBorder(graphics, xpos, ypos + yOff, this.width + PAD_S, rowHeights[y], col);
+				GuiHelper.border(graphics, xpos, ypos + yOff, this.width + PAD_S, rowHeights[y], col);
 			}
 			yOff += rowHeights[y];
 		}

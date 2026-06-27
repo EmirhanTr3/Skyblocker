@@ -6,7 +6,6 @@ import com.google.gson.JsonParser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.math.Axis;
 import de.hysky.skyblocker.SkyblockerMod;
 import de.hysky.skyblocker.annotations.Init;
 import de.hysky.skyblocker.config.SkyblockerConfigManager;
@@ -25,13 +24,13 @@ import net.fabricmc.fabric.api.event.client.player.ClientPlayerBlockBreakEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.object.skull.SkullModelBase;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -47,8 +46,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.Set;
-
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 public class GreenhousePaste {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
@@ -73,17 +71,17 @@ public class GreenhousePaste {
 
 	@Init
 	public static void init() {
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _c) -> {
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> {
 			LiteralArgumentBuilder<FabricClientCommandSource> greenhouseCommands = literal("greenhouse")
-					.then(literal("paste").executes(_ctx -> runGreenhousePaste()))
-					.then(literal("endPaste").executes(_ctx -> runGreenhousePasteRemove()))
+					.then(literal("paste").executes(_ -> runGreenhousePaste()))
+					.then(literal("endPaste").executes(_ -> runGreenhousePasteRemove()))
 					.then(literal("rotate")
-							.then(literal("right").executes(_ctx -> runRotateRight()))
-							.then(literal("left").executes(_ctx -> runRotateLeft())))
-					.then(literal("mirror").executes(_ctx -> runMirror()));
+							.then(literal("right").executes(_ -> runRotateRight()))
+							.then(literal("left").executes(_ -> runRotateLeft())))
+					.then(literal("mirror").executes(_ -> runMirror()));
 
 			if (Debug.debugEnabled()) {
-				greenhouseCommands.then(literal("debug").executes(_ctx -> {
+				greenhouseCommands.then(literal("debug").executes(_ -> {
 					debugPrintGreenhouses();
 					return Command.SINGLE_SUCCESS;
 				}));
@@ -101,9 +99,9 @@ public class GreenhousePaste {
 			renderPreview(collector);
 		});
 
-		ClientPlayerBlockBreakEvents.AFTER.register((_level, _player, pos, _state) -> onBlockChange(pos));
+		ClientPlayerBlockBreakEvents.AFTER.register((_, _, pos, _) -> onBlockChange(pos));
 
-		WorldEvents.BLOCK_STATE_UPDATE.register((pos, _old, _new) -> onBlockChange(pos));
+		WorldEvents.BLOCK_STATE_UPDATE.register((pos, _, _) -> onBlockChange(pos));
 		// Initialize greenhouse arrays
 		removePreview();
 	}
@@ -146,7 +144,7 @@ public class GreenhousePaste {
 	private static int runGreenhousePasteRemove() {
 		if (CLIENT.player == null) return Command.SINGLE_SUCCESS;
 		removePreview();
-		CLIENT.player.displayClientMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.config.farming.greenhouse.greenhousePaste.unload").withStyle(ChatFormatting.GREEN)), false);
+		CLIENT.player.sendSystemMessage(Constants.PREFIX.get().append(Component.translatable("skyblocker.config.farming.greenhouse.greenhousePaste.unload").withStyle(ChatFormatting.GREEN)));
 		return Command.SINGLE_SUCCESS;
 	}
 
@@ -186,19 +184,20 @@ public class GreenhousePaste {
 
 		boolean success = importGreenhouse(encoded);
 		if (!success) {
-			CLIENT.player.displayClientMessage(
+			CLIENT.player.sendSystemMessage(
 					Constants.PREFIX.get()
 							.append(Component.translatable("skyblocker.config.farming.greenhouse.greenhousePaste.loadFail")
 									.withStyle(ChatFormatting.RED))
 							.append(Component.literal(encoded)
-									.withStyle(ChatFormatting.GRAY)), false);
+									.withStyle(ChatFormatting.GRAY))
+			);
 			return;
 		}
 
-		CLIENT.player.displayClientMessage(
+		CLIENT.player.sendSystemMessage(
 				Constants.PREFIX.get()
 						.append(Component.translatable("skyblocker.config.farming.greenhouse.greenhousePaste.loadSuccess")
-								.withStyle(ChatFormatting.GREEN)), false);
+								.withStyle(ChatFormatting.GREEN)));
 
 		locateGreenhouse();
 	}
@@ -228,9 +227,10 @@ public class GreenhousePaste {
 			}
 		}
 
-		CLIENT.player.displayClientMessage(
+		CLIENT.player.sendSystemMessage(
 				Constants.PREFIX.get()
-						.append(Component.translatable("skyblocker.config.farming.greenhouse.greenhousePaste.notInGreenhouse").withStyle(ChatFormatting.RED)), false);
+						.append(Component.translatable("skyblocker.config.farming.greenhouse.greenhousePaste.notInGreenhouse").withStyle(ChatFormatting.RED))
+		);
 		return false;
 	}
 
@@ -377,7 +377,7 @@ public class GreenhousePaste {
 			greenhouse[x][z-2] = 23;
 			greenhouse[x+1][z-2] = 23;
 		}
-		catch (ArrayIndexOutOfBoundsException ignored) { }
+		catch (ArrayIndexOutOfBoundsException _) { }
 	}
 
 	private static void adjustForGodseed(int x, int z) {
@@ -394,7 +394,7 @@ public class GreenhousePaste {
 			greenhouse[x][z+1] = 37;
 			greenhouse[x+1][z+1] = 37;
 		}
-		catch (ArrayIndexOutOfBoundsException ignored) { }
+		catch (ArrayIndexOutOfBoundsException _) { }
 	}
 
 	/**
@@ -431,7 +431,7 @@ public class GreenhousePaste {
 					targetGreenhouse[9 - x][z] = crop.id();
 				}
 			}
-		} catch (Exception ignored) {
+		} catch (Exception _) {
 			return false;
 		}
 		return true;
@@ -494,7 +494,7 @@ public class GreenhousePaste {
 				if (currentCropId != 0) { // Undesired spot that is not empty
 					collector.submitOutlinedBox(new AABB(pos), new float[]{1f, 0f, 0f}, 0.5f, 4f, true);
 				} else if (targetCrop.isHead()) {
-					ItemStack stack = targetCrop.displayStack();
+					ItemStack stack = targetCrop.displayStack().getStack();
 					ResolvableProfile profile = stack.get(DataComponents.PROFILE);
 					if (profile == null) continue;
 
@@ -510,7 +510,7 @@ public class GreenhousePaste {
 
 					collector.submitVanilla(
 							null,
-							(_obj, worldState, submitNodeCollector) -> {
+							(_, worldState, submitNodeCollector) -> {
 								PoseStack matrices = new PoseStack();
 
 								matrices.translate(
@@ -519,8 +519,7 @@ public class GreenhousePaste {
 										pos.getZ() - worldState.cameraRenderState.pos.z
 								);
 
-								matrices.translate(0.5, 0, 0.5);
-								matrices.mulPose(Axis.ZN.rotationDegrees(180));
+								matrices.mulPose(SkullBlockRenderer.TRANSFORMATIONS.freeTransformations(0));
 
 								SkullModelBase.State skullState = new SkullModelBase.State();
 								skullState.animationPos = 0.0f;
@@ -531,7 +530,7 @@ public class GreenhousePaste {
 										skullState,
 										matrices,
 										renderType,
-										LightTexture.FULL_BRIGHT,
+										LightCoordsUtil.FULL_BRIGHT,
 										OverlayTexture.pack(PREVIEW_TINT, false),
 										0,
 										null
@@ -548,8 +547,6 @@ public class GreenhousePaste {
 			}
 		}
 	}
-
-	private record HeadPreviewState(BlockPos pos, ResolvableProfile profile) {}
 
 	public static void rotatePreview(boolean left) {
 		/*
@@ -592,10 +589,10 @@ public class GreenhousePaste {
 	private static void debugPrintGreenhouses() {
 		if (CLIENT.player == null) return;
 
-		CLIENT.player.displayClientMessage(Component.literal("=== CURRENT GREENHOUSE ===").withStyle(ChatFormatting.YELLOW), false);
+		CLIENT.player.sendSystemMessage(Component.literal("=== CURRENT GREENHOUSE ===").withStyle(ChatFormatting.YELLOW));
 		printGrid(greenhouse);
 
-		CLIENT.player.displayClientMessage(Component.literal("=== TARGET GREENHOUSE ===").withStyle(ChatFormatting.AQUA), false);
+		CLIENT.player.sendSystemMessage(Component.literal("=== TARGET GREENHOUSE ===").withStyle(ChatFormatting.AQUA));
 		printGrid(targetGreenhouse);
 	}
 
@@ -616,7 +613,7 @@ public class GreenhousePaste {
 			}
 			all.append(row).append("\n");
 		}
-		CLIENT.player.displayClientMessage(Component.literal(all.toString()), false);
+		CLIENT.player.sendSystemMessage(Component.literal(all.toString()));
 	}
 
 }

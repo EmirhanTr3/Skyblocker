@@ -5,6 +5,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
+import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -58,8 +59,8 @@ public class SoundSelectionPopup extends AbstractPopupScreen {
 		addRenderableWidget(adder.addChild(searchField));
 
 		CycleButton<Boolean> toggleAdvanced = CycleButton.booleanBuilder(YES_TEXT, NO_TEXT, advanced)
-				.withTooltip(b -> Tooltip.create(Component.translatable("skyblocker.utils.render.gui.soundSelectionPopup.advanced.@Tooltip")))
-				.create(0, 0, 100, 20, Component.translatable("skyblocker.utils.render.gui.soundSelectionPopup.advanced"), (button, value) -> {
+				.withTooltip(_ -> Tooltip.create(Component.translatable("skyblocker.utils.render.gui.soundSelectionPopup.advanced.@Tooltip")))
+				.create(0, 0, 100, 20, Component.translatable("skyblocker.utils.render.gui.soundSelectionPopup.advanced"), (_, _) -> {
 					advanced = !advanced;
 					filterSounds(searchField.getValue());
 				});
@@ -70,11 +71,11 @@ public class SoundSelectionPopup extends AbstractPopupScreen {
 
 		addRenderableWidget(adder.addChild(widgetsContainer, 2));
 
-		addRenderableWidget(adder.addChild(Button.builder(CommonComponents.GUI_CANCEL, b -> {
+		addRenderableWidget(adder.addChild(Button.builder(CommonComponents.GUI_CANCEL, _ -> {
 			onClose();
 			onDone.accept(null);
 		}).build()));
-		doneButton = Button.builder(CommonComponents.GUI_DONE, b -> {
+		doneButton = Button.builder(CommonComponents.GUI_DONE, _ -> {
 			onClose();
 			onDone.accept(selectedSound);
 		}).build();
@@ -137,15 +138,15 @@ public class SoundSelectionPopup extends AbstractPopupScreen {
 	}
 
 	@Override
-	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		super.extractBackground(graphics, mouseX, mouseY, delta);
-		drawPopupBackground(graphics, gridWidget.getX(), gridWidget.getY(), gridWidget.getWidth(), gridWidget.getHeight());
+	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+		super.extractBackground(graphics, mouseX, mouseY, a);
+		extractPopupBackground(graphics, gridWidget.getX(), gridWidget.getY(), gridWidget.getWidth(), gridWidget.getHeight());
 	}
 
 	private class ListContainer extends AbstractContainerWidget {
 
-		ListContainer(int i, int j, int k, int l) {
-			super(i, j, k, l, Component.literal("List"));
+		ListContainer(int x, int y, int width, int height) {
+			super(x, y, width, height, Component.literal("List"), AbstractScrollArea.defaultSettings(8));
 		}
 
 		@Override
@@ -169,10 +170,10 @@ public class SoundSelectionPopup extends AbstractPopupScreen {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 			graphics.enableScissor(getX(), getY(), getRight(), getBottom());
 			for (AbstractWidget widget : filteredWidgets) {
-				if (isVisible(widget)) widget.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+				if (isVisible(widget)) widget.extractRenderState(graphics, mouseX, mouseY, a);
 			}
 			extractScrollbar(graphics, mouseX, mouseY);
 			graphics.disableScissor();
@@ -203,6 +204,7 @@ public class SoundSelectionPopup extends AbstractPopupScreen {
 
 	private class SoundWidget extends StringWidget {
 		SoundEvent sound;
+		@SuppressWarnings("unused")
 		Component name;
 
 		SoundWidget(Component name, SoundEvent sound) {
@@ -218,8 +220,8 @@ public class SoundSelectionPopup extends AbstractPopupScreen {
 		}
 
 		@Override
-		public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-			super.renderWidget(graphics, mouseX, mouseY, delta);
+		public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+			super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
 			if (selectedSound == sound) {
 				graphics.fill(RenderPipelines.GUI, this.getX(), this.getY(), this.getRight(), this.getBottom(), 0x3000FF00);
 			} else if (this.isHovered) {
@@ -232,7 +234,7 @@ public class SoundSelectionPopup extends AbstractPopupScreen {
 			selectedSound = sound;
 			if (doneButton != null) doneButton.active = true;
 			minecraft.getSoundManager().stop();
-			minecraft.getSoundManager().play(SimpleSoundInstance.forUI(sound, 1.0F));
+			minecraft.getSoundManager().play(SimpleSoundInstance.forUI(sound, 1.0f));
 			super.onClick(click, doubled);
 		}
 	}

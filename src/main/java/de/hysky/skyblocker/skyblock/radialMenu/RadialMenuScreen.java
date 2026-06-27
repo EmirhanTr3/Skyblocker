@@ -19,10 +19,9 @@ import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.item.ItemStack;
-
 
 public class RadialMenuScreen extends Screen implements ContainerListener {
 	private static final Minecraft CLIENT = Minecraft.getInstance();
@@ -215,7 +214,7 @@ public class RadialMenuScreen extends Screen implements ContainerListener {
 
 	private void clickSlot(int slotId, int button) {
 		if (CLIENT.gameMode == null) return;
-		CLIENT.gameMode.handleInventoryMouseClick(handler.containerId, slotId + menuType.clickSlotOffset(slotId), menuType.remapClickSlotButton(button, slotId + menuType.clickSlotOffset(slotId)), ClickType.PICKUP, CLIENT.player);
+		CLIENT.gameMode.handleContainerInput(handler.containerId, slotId + menuType.clickSlotOffset(slotId), menuType.remapClickSlotButton(button, slotId + menuType.clickSlotOffset(slotId)), ContainerInput.PICKUP, CLIENT.player);
 	}
 
 	@Override
@@ -229,8 +228,8 @@ public class RadialMenuScreen extends Screen implements ContainerListener {
 	}
 
 	@Override
-	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
-		super.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+		super.extractRenderState(graphics, mouseX, mouseY, a);
 
 		//render menu title
 		graphics.centeredText(font, getTitle(), width / 2, height / 2 - font.lineHeight, 0xFFFFFFFF);

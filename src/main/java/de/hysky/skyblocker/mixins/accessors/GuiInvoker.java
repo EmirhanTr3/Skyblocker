@@ -16,5 +16,5 @@ public interface GuiInvoker {
 	@Nullable Component getOverlayMessageString();
 
 	@Invoker("displayScoreboardSidebar")
-	void skyblocker$renderSidebar(GuiGraphicsExtractor graphics, Objective objective);
+	void extractSidebar(GuiGraphicsExtractor graphics, Objective objective);
 }

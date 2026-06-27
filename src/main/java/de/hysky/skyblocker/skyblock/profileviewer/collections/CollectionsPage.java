@@ -5,6 +5,8 @@ import de.hysky.skyblocker.skyblock.profileviewer.ProfileViewerPage;
 import de.hysky.skyblocker.skyblock.profileviewer.ProfileViewerScreen;
 import de.hysky.skyblocker.skyblock.profileviewer.utils.SubPageSelectButton;
 import de.hysky.skyblocker.skyblock.tabhud.util.Ico;
+import de.hysky.skyblocker.utils.FlexibleItemStack;
+
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,13 +15,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public class CollectionsPage implements ProfileViewerPage {
 	private static final String[] COLLECTION_CATEGORIES = {"MINING", "FARMING", "COMBAT", "FISHING", "FORAGING", "RIFT"};
 	private static final int TOTAL_HEIGHT = 165;
-	private static final Map<String, ItemStack> ICON_MAP = Map.ofEntries(
+	private static final Map<String, FlexibleItemStack> ICON_MAP = Map.ofEntries(
 			Map.entry("MINING", Ico.STONE_PICKAXE),
 			Map.entry("FARMING", Ico.GOLDEN_HOE),
 			Map.entry("COMBAT", Ico.STONE_SWORD),
@@ -47,12 +48,12 @@ public class CollectionsPage implements ProfileViewerPage {
 	}
 
 	@Override
-	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, int rootX, int rootY) {
+	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, int rootX, int rootY) {
 		int startingY = rootY + (TOTAL_HEIGHT - collectionSelectButtons.size() * 21) / 2;
 		for (int i = 0; i < collectionSelectButtons.size(); i++) {
 			collectionSelectButtons.get(i).setX(rootX);
 			collectionSelectButtons.get(i).setY(startingY + i * 21);
-			collectionSelectButtons.get(i).extractRenderState(graphics, mouseX, mouseY, delta);
+			collectionSelectButtons.get(i).extractRenderState(graphics, mouseX, mouseY, a);
 		}
 
 		if (collections[activePage] == null) {
@@ -61,7 +62,7 @@ public class CollectionsPage implements ProfileViewerPage {
 		}
 
 		collections[activePage].markWidgetsAsVisible();
-		collections[activePage].extractRenderState(graphics, mouseX, mouseY, delta, rootX + 35, rootY + 6);
+		collections[activePage].extractRenderState(graphics, mouseX, mouseY, a, rootX + 35, rootY + 6);
 	}
 
 	public void onNavButtonClick(SubPageSelectButton selectButton) {

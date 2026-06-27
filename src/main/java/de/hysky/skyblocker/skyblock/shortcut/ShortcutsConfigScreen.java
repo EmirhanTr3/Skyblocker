@@ -47,17 +47,17 @@ public class ShortcutsConfigScreen extends Screen {
 		GridLayout gridWidget = new GridLayout();
 		gridWidget.defaultCellSetting().paddingHorizontal(5).paddingVertical(2);
 		GridLayout.RowHelper adder = gridWidget.createRowHelper(2);
-		buttonDelete = Button.builder(Component.translatable("selectServer.deleteButton"), button -> {
+		buttonDelete = Button.builder(Component.translatable("selectServer.deleteButton"), _ -> {
 			if (shortcutsConfigListWidget.getSelected() instanceof ShortcutsConfigListWidget.ShortcutEntry<?> shortcutEntry) {
 				scrollAmount = shortcutsConfigListWidget.scrollAmount();
 				minecraft.setScreen(new ConfirmScreen(confirmedAction -> deleteEntry(confirmedAction, shortcutEntry), Component.translatable("skyblocker.shortcuts.deleteQuestion"), Component.translatableEscape("skyblocker.shortcuts.deleteWarning", shortcutEntry), Component.translatable("selectServer.deleteButton"), CommonComponents.GUI_CANCEL));
 			}
 		}).build();
 		adder.addChild(buttonDelete);
-		buttonNew = Button.builder(Component.translatable("skyblocker.shortcuts.new"), buttonNew -> shortcutsConfigListWidget.addShortcutAfterSelected()).build();
+		buttonNew = Button.builder(Component.translatable("skyblocker.shortcuts.new"), _ -> shortcutsConfigListWidget.addShortcutAfterSelected()).build();
 		adder.addChild(buttonNew);
-		adder.addChild(Button.builder(CommonComponents.GUI_CANCEL, button -> onClose()).build());
-		buttonDone = Button.builder(CommonComponents.GUI_DONE, button -> {
+		adder.addChild(Button.builder(CommonComponents.GUI_CANCEL, _ -> onClose()).build());
+		buttonDone = Button.builder(CommonComponents.GUI_DONE, _ -> {
 			shortcutsConfigListWidget.saveShortcuts();
 			onClose();
 		}).tooltip(Tooltip.create(Component.translatable("skyblocker.shortcuts.commandSuggestionTooltip"))).build();
@@ -77,8 +77,8 @@ public class ShortcutsConfigScreen extends Screen {
 	}
 
 	@Override
-	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		super.extractRenderState(graphics, mouseX, mouseY, delta);
+	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+		super.extractRenderState(graphics, mouseX, mouseY, a);
 		graphics.centeredText(this.font, this.title, this.width / 2, 16, CommonColors.WHITE);
 	}
 

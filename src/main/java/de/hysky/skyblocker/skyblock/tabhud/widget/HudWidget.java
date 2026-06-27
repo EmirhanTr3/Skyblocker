@@ -56,7 +56,7 @@ public abstract class HudWidget extends AbstractWidget {
 	public abstract boolean isEnabledIn(Location location);
 
 	/**
-	 * Perform all your logic here. Or in the {@link #renderWidget(GuiGraphicsExtractor, int, int, float)} method if you feel like it.
+	 * Perform all your logic here. Or in the {@link #renderWidget(GuiGraphics, int, int, float)} method if you feel like it.
 	 * But this will be called much less often. See usages of it.
 	 *
 	 * @see #shouldUpdateBeforeRendering()
@@ -72,7 +72,7 @@ public abstract class HudWidget extends AbstractWidget {
 		return false;
 	}
 
-	protected abstract void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta);
+	protected abstract void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta);
 
 	public final void extractRenderState(GuiGraphicsExtractor graphics) {
 		extractRenderState(graphics, -1, -1, Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaTicks());
@@ -80,7 +80,7 @@ public abstract class HudWidget extends AbstractWidget {
 
 	@Override
 	public final void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		renderWidget(graphics, mouseX, mouseY, delta);
+		extractWidgetRenderState(graphics, mouseX, mouseY, delta);
 	}
 
 	/**

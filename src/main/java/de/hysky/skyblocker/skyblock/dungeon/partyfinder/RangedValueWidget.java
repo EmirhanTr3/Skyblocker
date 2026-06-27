@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
+import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -34,7 +35,7 @@ public class RangedValueWidget extends AbstractContainerWidget {
 	private final Button okButton;
 
 	public RangedValueWidget(PartyFinderScreen screen, Component name, int x, int y, int width, int slotId) {
-		super(x, y, width, 45, Component.empty());
+		super(x, y, width, 45, Component.empty(), AbstractScrollArea.defaultSettings(4));
 		this.slotId = slotId;
 		this.screen = screen;
 		this.name = name;
@@ -43,7 +44,7 @@ public class RangedValueWidget extends AbstractContainerWidget {
 		this.input.setVisible(false);
 		this.input.setMaxLength(3);
 		input.setResponder(this::updateConfirmButton);
-		this.okButton = Button.builder(Component.literal("✔"), (a) -> sendPacket())
+		this.okButton = Button.builder(Component.literal("✔"), _ -> sendPacket())
 				.bounds(x + width - 15, y + 25, 15, 15)
 				.build();
 		this.okButton.visible = false;
@@ -68,14 +69,14 @@ public class RangedValueWidget extends AbstractContainerWidget {
 				this.okButton.active = active1;
 				this.input.setGood(active1);
 			}
-		} catch (NumberFormatException e) {
+		} catch (NumberFormatException _) {
 			this.okButton.active = false;
 			this.input.setGood(false);
 		}
 	}
 
 	@Override
-	protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		graphics.text(Minecraft.getInstance().font, name, getX(), getY(), 0xFFD0D0D0, false);
 		int textOffset = 10;
 		if (!visible) return;
@@ -86,8 +87,8 @@ public class RangedValueWidget extends AbstractContainerWidget {
 			graphics.text(textRenderer, String.valueOf(maxSlotId), getX() + 40, getY() - 10, 0xFFFF0000, true);
 			graphics.text(textRenderer, String.valueOf(backSlotId), getX() + 60, getY() - 10, 0xFFFF0000, true);
 		}
-		this.input.extractRenderState(graphics, mouseX, mouseY, delta);
-		this.okButton.extractRenderState(graphics, mouseX, mouseY, delta);
+		this.input.extractRenderState(graphics, mouseX, mouseY, a);
+		this.okButton.extractRenderState(graphics, mouseX, mouseY, a);
 		if (Objects.requireNonNull(this.state) == State.CLOSED) {
 			graphics.fill(getX(), getY() + textOffset, getX() + width, getY() + 15 + textOffset, 0xFFFFFFFF);
 			graphics.fill(getX() + 1, getY() + 1 + textOffset, getX() + width - 1, getY() + 14 + textOffset, 0xFF000000);
@@ -163,9 +164,9 @@ public class RangedValueWidget extends AbstractContainerWidget {
 		SignBlockEntity sign = screen.getSign();
 		String inputTrimmed = input.getValue().trim();
 		if (state == State.MODIFYING_MIN) {
-			try { min = Integer.parseInt(inputTrimmed); } catch (NumberFormatException ignored) {}
+			try { min = Integer.parseInt(inputTrimmed); } catch (NumberFormatException _) {}
 		} else if (state == State.MODIFYING_MAX) {
-			try { max = Integer.parseInt(inputTrimmed); } catch (NumberFormatException ignored) {}
+			try { max = Integer.parseInt(inputTrimmed); } catch (NumberFormatException _) {}
 		}
 		if (sign != null) {
 			Component[] messages = sign.getText(screen.isSignFront()).getMessages(screen.getClient().isTextFilteringEnabled());

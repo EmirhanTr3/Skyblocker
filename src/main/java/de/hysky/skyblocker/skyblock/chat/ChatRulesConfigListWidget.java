@@ -102,7 +102,7 @@ public class ChatRulesConfigListWidget extends ContainerObjectSelectionList<Chat
 		}
 
 		@Override
-		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
 			graphics.centeredText(minecraft.font, Component.translatable("skyblocker.config.chat.chatRules.screen.ruleName"), ChatRulesConfigListWidget.this.getWidth() / 2 - 100, this.getY() + 5, CommonColors.WHITE);
 			graphics.centeredText(minecraft.font, Component.translatable("skyblocker.config.chat.chatRules.screen.ruleEnabled"), ChatRulesConfigListWidget.this.getWidth() / 2 - 10, this.getY() + 5, CommonColors.WHITE);
 			graphics.centeredText(minecraft.font, Component.translatable("skyblocker.config.chat.chatRules.screen.modify"), ChatRulesConfigListWidget.this.getWidth() / 2 + 77, this.getY() + 5, CommonColors.WHITE);
@@ -154,15 +154,15 @@ public class ChatRulesConfigListWidget extends ContainerObjectSelectionList<Chat
 
 			Checkbox enabledCheck = layout.addChild(Checkbox.builder(Component.empty(), minecraft.font)
 					.selected(chatRule.getEnabled())
-					.onValueChange((_cb, value) -> {
+					.onValueChange((_, value) -> {
 						hasChanged = true;
 						chatRule.setEnabled(value);
 					})
 					.build(), s -> s.padding(16, 4, 23, 0));
 
-			Button openConfigButton = layout.addChild(Button.builder(Component.translatable("skyblocker.config.chat.chatRules.screen.editRule"), a -> minecraft.setScreen(new ChatRuleConfigScreen(screen, chatRuleIndex))).size(50, 20).tooltip(Tooltip.create(Component.translatable("skyblocker.config.chat.chatRules.screen.editRule.@Tooltip"))).build());
+			Button openConfigButton = layout.addChild(Button.builder(Component.translatable("skyblocker.config.chat.chatRules.screen.editRule"), _ -> minecraft.setScreen(new ChatRuleConfigScreen(screen, chatRuleIndex))).size(50, 20).tooltip(Tooltip.create(Component.translatable("skyblocker.config.chat.chatRules.screen.editRule.@Tooltip"))).build());
 
-			Button deleteButton = layout.addChild(Button.builder(Component.translatable("selectServer.delete"), a ->
+			Button deleteButton = layout.addChild(Button.builder(Component.translatable("selectServer.delete"), _ ->
 				minecraft.setScreen(new ConfirmScreen(this::deleteEntry, Component.translatable("skyblocker.config.chat.chatRules.screen.deleteQuestion"), Component.translatable("skyblocker.config.chat.chatRules.screen.deleteWarning", chatRule.getName()), Component.translatable("selectServer.deleteButton"), CommonComponents.GUI_CANCEL))
 			).size(50, 20).build());
 
@@ -180,11 +180,11 @@ public class ChatRulesConfigListWidget extends ContainerObjectSelectionList<Chat
 		}
 
 		@Override
-		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
 			// Text
-			nameWidget.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+			nameWidget.extractRenderState(graphics, mouseX, mouseY, a);
 			// Widgets
-			layout.visitWidgets((child) -> child.extractRenderState(graphics, mouseX, mouseY, deltaTicks));
+			layout.visitWidgets(child -> child.extractRenderState(graphics, mouseX, mouseY, a));
 		}
 
 		@Override

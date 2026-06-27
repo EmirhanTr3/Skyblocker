@@ -11,7 +11,7 @@ import java.util.List;
 
 public final class SeparatorEntry extends WidgetsListEntry {
 	@Override
-	public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+	public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
 		graphics.centeredText(Minecraft.getInstance().font, Component.nullToEmpty("- Skyblocker Widgets -"), this.getX() + this.getWidth() / 2, this.getY() + (this.getHeight() - 9) / 2, CommonColors.WHITE);
 	}
 
@@ -21,5 +21,5 @@ public final class SeparatorEntry extends WidgetsListEntry {
 	}
 
 	@Override
-	public void drawBorder(GuiGraphicsExtractor graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {}
+	public void extractBorder(GuiGraphicsExtractor graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {}
 }

@@ -20,7 +20,7 @@ import de.hysky.skyblocker.utils.ApiUtils;
 import de.hysky.skyblocker.utils.Http;
 import de.hysky.skyblocker.utils.ProfileUtils;
 import de.hysky.skyblocker.utils.scheduler.Scheduler;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
@@ -50,7 +50,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
-import static net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsMouse;
+import static net.minecraft.client.gui.screens.inventory.InventoryScreen.extractEntityInInventoryFollowsMouse;
 
 public class ProfileViewerScreen extends Screen {
 	public static final Logger LOGGER = LoggerFactory.getLogger(ProfileViewerScreen.class);
@@ -130,7 +130,7 @@ public class ProfileViewerScreen extends Screen {
 
 
 		if (textWidget != null) textWidget.extractRenderState(graphics, font, rootX + 8, rootY + 120, mouseX, mouseY);
-		drawPlayerEntity(graphics, playerName != null ? playerName : "Loading...", rootX, rootY, mouseX, mouseY);
+		extractPlayerEntity(graphics, playerName != null ? playerName : "Loading...", rootX, rootY, mouseX, mouseY);
 
 		if (profileViewerPages[activePage] != null) {
 			profileViewerPages[activePage].markWidgetsAsVisible();
@@ -140,9 +140,9 @@ public class ProfileViewerScreen extends Screen {
 		}
 	}
 
-	private void drawPlayerEntity(GuiGraphicsExtractor graphics, String username, int rootX, int rootY, int mouseX, int mouseY) {
+	private void extractPlayerEntity(GuiGraphicsExtractor graphics, String username, int rootX, int rootY, int mouseX, int mouseY) {
 		if (entity != null)
-			renderEntityInInventoryFollowsMouse(graphics, rootX + 9, rootY + 16, rootX + 89, rootY + 124, 42, 0.0625F, mouseX, mouseY, entity);
+			extractEntityInInventoryFollowsMouse(graphics, rootX + 9, rootY + 16, rootX + 89, rootY + 124, 42, 0.0625f, mouseX, mouseY, entity);
 		graphics.centeredText(font, username.length() > 15 ? username.substring(0, 15) : username, rootX + 47, rootY + 14, Color.WHITE.getRGB());
 	}
 
@@ -198,7 +198,7 @@ public class ProfileViewerScreen extends Screen {
 					}
 				};
 				entity.setCustomNameVisible(false);
-			}).exceptionally(ex -> {
+			}).exceptionally(_ -> {
 				// "Player not found" doesn't fit on the screen lol
 				this.playerName = "User not found";
 				this.errorMessage = "Player skin not found";
@@ -235,15 +235,15 @@ public class ProfileViewerScreen extends Screen {
 	public static void initClass() {
 		fetchCollectionsData(); // caching on launch
 
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-			LiteralArgumentBuilder<FabricClientCommandSource> literalArgumentBuilder = ClientCommandManager.literal("pv")
-					.then(ClientCommandManager.argument("username", StringArgumentType.string())
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> {
+			LiteralArgumentBuilder<FabricClientCommandSource> literalArgumentBuilder = ClientCommands.literal("pv")
+					.then(ClientCommands.argument("username", StringArgumentType.string())
 							.suggests((source, builder) -> SharedSuggestionProvider.suggest(getPlayerSuggestions(source.getSource()), builder))
 							.executes(Scheduler.queueOpenScreenFactoryCommand(context -> new ProfileViewerScreen(StringArgumentType.getString(context, "username"))))
 					)
 					.executes(Scheduler.queueOpenScreenCommand(() -> new ProfileViewerScreen(Minecraft.getInstance().getUser().getName())));
 			dispatcher.register(literalArgumentBuilder);
-			dispatcher.register(ClientCommandManager.literal(SkyblockerMod.NAMESPACE).then(literalArgumentBuilder));
+			dispatcher.register(ClientCommands.literal(SkyblockerMod.NAMESPACE).then(literalArgumentBuilder));
 		});
 	}
 

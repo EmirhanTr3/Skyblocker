@@ -23,7 +23,7 @@ public class PowderMiningWidget extends HudWidget {
 	}
 
 	@Override
-	public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		var set = PowderMiningTracker.getShownRewards().object2IntEntrySet();
 		if (set.isEmpty()) {
 			setDimensions(0, 0);

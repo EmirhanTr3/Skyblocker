@@ -70,7 +70,7 @@ public class CorpseProfitScreen extends Screen {
 
 		Component buttonText = summaryView ? Component.translatable("skyblocker.corpseTracker.historyView") : Component.translatable("skyblocker.corpseTracker.summaryView");
 		adder.addChild(Button.builder(buttonText, this::changeView).build());
-		adder.addChild(Button.builder(CommonComponents.GUI_DONE, button -> onClose()).build());
+		adder.addChild(Button.builder(CommonComponents.GUI_DONE, _ -> onClose()).build());
 
 		layout.addToFooter(gridWidget);
 		repositionElements();

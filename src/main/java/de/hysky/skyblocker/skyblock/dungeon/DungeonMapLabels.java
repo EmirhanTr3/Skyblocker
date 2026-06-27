@@ -37,7 +37,7 @@ public class DungeonMapLabels {
 
 	@Init
 	public static void init() {
-		ClientPlayConnectionEvents.JOIN.register((_n, _p, _c) -> DungeonMapLabels.clearLabels());
+		ClientPlayConnectionEvents.JOIN.register((_, _, _) -> DungeonMapLabels.clearLabels());
 		DungeonEvents.DUNGEON_ENDED.register(DungeonMapLabels::clearLabels);
 		DungeonEvents.ROOM_MATCHED.register(DungeonMapLabels::onRoomMatched);
 		Scheduler.INSTANCE.scheduleCyclic(() -> updateRoomNames(null), 20);
@@ -112,7 +112,7 @@ public class DungeonMapLabels {
 		};
 	}
 
-	protected static void renderRoomNames(GuiGraphicsExtractor graphics) {
+	protected static void extractRoomNames(GuiGraphicsExtractor graphics) {
 		if (!SkyblockerConfigManager.get().dungeons.dungeonMap.showRoomLabels) return;
 
 		Font textRenderer = Minecraft.getInstance().font;
@@ -120,7 +120,7 @@ public class DungeonMapLabels {
 			graphics.pose().pushMatrix();
 			graphics.pose().translate(label.x, label.y);
 			graphics.pose().scale(LABEL_SCALE);
-			drawText(graphics, textRenderer, label.textLines, label.color);
+			extractText(graphics, textRenderer, label.textLines, label.color);
 			graphics.pose().popMatrix();
 		}
 	}
@@ -200,11 +200,11 @@ public class DungeonMapLabels {
 		return (int) (maxWidth * MAX_WIDTH_SCALAR);
 	}
 
-	private static void drawText(GuiGraphicsExtractor graphics, Font textRenderer, List<FormattedCharSequence> lines, int color) {
+	private static void extractText(GuiGraphicsExtractor graphics, Font textRenderer, List<FormattedCharSequence> lines, int color) {
 		int y = lines.size() > 1 ? -(textRenderer.lineHeight / 2) * (lines.size() - 1) : 0;
 		for (FormattedCharSequence orderedText : lines) {
 			int textWidth = textRenderer.width(orderedText) / 2;
-			GuiHelper.drawOutlinedText(graphics, orderedText, -textWidth, y, color, CommonColors.BLACK);
+			GuiHelper.outlinedText(graphics, orderedText, -textWidth, y, color, CommonColors.BLACK);
 			y += 9;
 		}
 	}

@@ -25,7 +25,7 @@ public class WidgetSlotEntry extends WidgetsListSlotEntry {
 
 	public WidgetSlotEntry(WidgetsListTab parent, int slotId, ItemStack icon) {
 		super(parent, slotId, icon);
-		editButton = Button.builder(Component.literal("EDIT"), button -> {
+		editButton = Button.builder(Component.literal("EDIT"), _ -> {
 					this.parent.clickAndWaitForServer(this.slotId, 1);
 					this.parent.resetScrollOnLoad();
 				})
@@ -38,14 +38,14 @@ public class WidgetSlotEntry extends WidgetsListSlotEntry {
 		} else if (string.startsWith("✖")) {
 			state = State.DISABLED;
 		} else state = State.LOCKED;
-		enableButton = Button.builder(state.equals(State.ENABLED) ? ENABLED_TEXT : DISABLED_TEXT, button -> this.parent.clickAndWaitForServer(this.slotId, 0))
+		enableButton = Button.builder(state.equals(State.ENABLED) ? ENABLED_TEXT : DISABLED_TEXT, _ -> this.parent.clickAndWaitForServer(this.slotId, 0))
 				.size(64, 12)
 				.build();
 		alwaysEnabled = ItemUtils.getLoreLineIf(icon, s -> s.toLowerCase(Locale.ENGLISH).contains("always enable")) != null;
 	}
 
 	@Override
-	public void renderTooltip(GuiGraphicsExtractor graphics, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY) {
+	public void extractTooltip(GuiGraphicsExtractor graphics, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY) {
 		if (mouseX >= x && mouseX <= x + entryWidth - 110 && mouseY >= y && mouseY <= y + entryHeight) {
 			@SuppressWarnings("deprecation")
 			List<Component> lore = ItemUtils.getLore(icon);
@@ -64,10 +64,10 @@ public class WidgetSlotEntry extends WidgetsListSlotEntry {
 	}
 
 	@Override
-	public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+	public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
 		int textY = this.getY() + (this.getHeight() - 9) / 2;
 		Font textRenderer = Minecraft.getInstance().font;
-		renderIconAndText(graphics, this.getY(), this.getX(), this.getHeight());
+		extractIconAndText(graphics, this.getY(), this.getX(), this.getHeight());
 		if (state != State.LOCKED) {
 
 			editButton.setPosition(this.getX() + this.getWidth() - 40, this.getY() + (this.getHeight() - 12) / 2);

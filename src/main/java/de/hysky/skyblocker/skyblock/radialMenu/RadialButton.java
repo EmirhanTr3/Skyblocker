@@ -85,7 +85,7 @@ public class RadialButton implements Renderable, GuiEventListener, LayoutElement
 		vertices.add(getPos(center, startAngle + arcLength / 2, external));
 
 		//draw background
-		GuiHelper.drawCustomShape(graphics, vertices, color);
+		GuiHelper.customShape(graphics, vertices, color);
 
 		//render icon
 		float iconAngle = startAngle + (arcLength / 2);
@@ -93,13 +93,13 @@ public class RadialButton implements Renderable, GuiEventListener, LayoutElement
 		iconPos.sub(8, 8);
 		graphics.item(icon, (int) iconPos.x, (int) iconPos.y);
 		graphics.itemDecorations(CLIENT.font, icon, (int) iconPos.x, (int) iconPos.y);
-		SlotTextManager.renderSlotText(graphics, CLIENT.font, null, icon, linkedSlot, (int) iconPos.x, (int) iconPos.y);
+		SlotTextManager.extractSlotText(graphics, CLIENT.font, null, icon, linkedSlot, (int) iconPos.x, (int) iconPos.y);
 
 		//render tooltip
 		if (hovered && (GuiHelper.hasShiftDown() || SkyblockerConfigManager.get().uiAndVisuals.radialMenu.tooltipsWithoutShift)) {
 			// Backpack Preview
 			if (CLIENT.screen != null && CLIENT.screen.getTitle().getString().equals("Storage")) {
-				BackpackPreview.renderPreview(graphics, CLIENT.screen, linkedSlot, mouseX, mouseY);
+				BackpackPreview.extractPreview(graphics, CLIENT.screen, linkedSlot, mouseX, mouseY);
 			} else {
 				//normal tooltips
 				graphics.setTooltipForNextFrame(CLIENT.font, icon, mouseX, mouseY);

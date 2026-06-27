@@ -55,12 +55,12 @@ public class JacobMedalBackground extends ColoredItemBackground<Integer> {
 	}
 
 	@Override
-	protected void draw(GuiGraphicsExtractor graphics, int x, int y, Integer color) {
-		float r = ((color >> 16) & 0xFF) / 255F;
-		float g = ((color >> 8) & 0xFF) / 255F;
-		float b = (color & 0xFF) / 255F;
+	protected void extract(GuiGraphicsExtractor context, int x, int y, Integer color) {
+		float r = ((color >> 16) & 0xFF) / 255f;
+		float g = ((color >> 8) & 0xFF) / 255f;
+		float b = (color & 0xFF) / 255f;
 
-		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, getSprite(), x, y, 16, 16,
+		context.blitSprite(RenderPipelines.GUI_TEXTURED, getSprite(), x, y, 16, 16,
 				ARGB.colorFromFloat(
 						SkyblockerConfigManager.get().general.itemInfoDisplay.itemBackgroundOpacity,
 						r, g, b

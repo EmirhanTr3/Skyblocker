@@ -29,7 +29,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonColors;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -166,7 +166,7 @@ public class PartyFinderScreen extends Screen {
 		searchField.setHint(SEARCH_TEXT);
 		searchField.setResponder(s -> partyEntryListWidget.setSearch(s));
 		// Refresh button
-		refreshButton = Button.builder(Component.literal("⟳").setStyle(Style.EMPTY.withColor(ChatFormatting.GREEN)), (a) -> {
+		refreshButton = Button.builder(Component.literal("⟳").setStyle(Style.EMPTY.withColor(ChatFormatting.GREEN)), _ -> {
 					if (refreshSlotId != -1) {
 						clickAndWaitForServer(refreshSlotId);
 						resetScroll = true;
@@ -177,7 +177,7 @@ public class PartyFinderScreen extends Screen {
 		refreshButton.active = false;
 
 		// Prev and next page buttons
-		previousPageButton = Button.builder(Component.literal("←"), (a) -> {
+		previousPageButton = Button.builder(Component.literal("←"), _ -> {
 					if (prevPageSlotId != -1) {
 						clickAndWaitForServer(prevPageSlotId);
 						resetScroll = true;
@@ -186,7 +186,7 @@ public class PartyFinderScreen extends Screen {
 				.pos(searchField.getX() + searchField.getWidth(), searchField.getY())
 				.size(12, 12).build();
 		previousPageButton.active = false;
-		nextPageButton = Button.builder(Component.literal("→"), (a) -> {
+		nextPageButton = Button.builder(Component.literal("→"), _ -> {
 					if (nextPageSlotId != -1) {
 						clickAndWaitForServer(nextPageSlotId);
 						resetScroll = true;
@@ -206,7 +206,7 @@ public class PartyFinderScreen extends Screen {
 		int searchButtonWidth = (partyEntryListWidget.getRowWidth() + 6) / 3 - 2 * searchButtonMargin;
 
 
-		partyFinderButton = Button.builder(Component.translatable("skyblocker.partyFinder.tabs.partyFinder"), (a) -> {
+		partyFinderButton = Button.builder(Component.translatable("skyblocker.partyFinder.tabs.partyFinder"), _ -> {
 					if (partyButtonSlotId != -1) {
 						setCurrentPage(Page.FINDER);
 						clickAndWaitForServer(partyButtonSlotId);
@@ -215,7 +215,7 @@ public class PartyFinderScreen extends Screen {
 				.pos(partyEntryListWidget.getRowLeft(), entryListTopY - 39)
 				.size(searchButtonWidth + searchButtonMargin, topRowButtonsHeight).build();
 
-		settingsButton = Button.builder(Component.translatable("skyblocker.partyFinder.tabs.searchSettings"), (a) -> {
+		settingsButton = Button.builder(Component.translatable("skyblocker.partyFinder.tabs.searchSettings"), _ -> {
 					if (settingsButtonSlotId != -1) {
 						setCurrentPage(Page.SETTINGS);
 						clickAndWaitForServer(settingsButtonSlotId);
@@ -224,7 +224,7 @@ public class PartyFinderScreen extends Screen {
 				.pos(partyEntryListWidget.getRowLeft() + searchButtonWidth + 3 * searchButtonMargin, entryListTopY - 39)
 				.size(searchButtonWidth, topRowButtonsHeight).build();
 
-		createPartyButton = Button.builder(Component.translatable("skyblocker.partyFinder.tabs.createParty"), (a) -> {
+		createPartyButton = Button.builder(Component.translatable("skyblocker.partyFinder.tabs.createParty"), _ -> {
 					if (createPartyButtonSlotId != -1) {
 						clickAndWaitForServer(createPartyButtonSlotId);
 					}
@@ -244,7 +244,7 @@ public class PartyFinderScreen extends Screen {
 		addRenderableWidget(createPartyButton);
 		addRenderableWidget(settingsContainer);
 		if (Debug.debugEnabled()) {
-			addRenderableWidget(Button.builder(Component.nullToEmpty("DEBUG"), (a) -> DEBUG = !DEBUG).bounds(width - 40, 0, 40, 20).build());
+			addRenderableWidget(Button.builder(Component.nullToEmpty("DEBUG"), _ -> DEBUG = !DEBUG).bounds(width - 40, 0, 40, 20).build());
 		}
 
 		dirtiedTime = System.currentTimeMillis();
@@ -262,11 +262,11 @@ public class PartyFinderScreen extends Screen {
 	}
 
 	@Override
-	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		if (!settingsContainer.canInteract(null)) {
 			graphics.fill(0, 0, width, height, 0x40000000);
 		}
-		super.extractRenderState(graphics, mouseX, mouseY, delta);
+		super.extractRenderState(graphics, mouseX, mouseY, a);
 
 		if (searchField.visible) {
 			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SEARCH_ICON_TEXTURE, partyEntryListWidget.getRowLeft() + 1, searchField.getY() + 1, 10, 10);
@@ -293,8 +293,8 @@ public class PartyFinderScreen extends Screen {
 	}
 
 	@Override
-	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		this.renderTransparentBackground(graphics);
+	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+		this.extractTransparentBackground(graphics);
 		int i = partyEntryListWidget.getRowWidth() + 16 + 6;
 		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_TEXTURE.get(), partyEntryListWidget.getRowLeft() - 8, partyEntryListWidget.getY() - 12 - 8, i, partyEntryListWidget.getBottom() - partyEntryListWidget.getY() + 16 + 12);
 	}
@@ -526,7 +526,7 @@ public class PartyFinderScreen extends Screen {
 	public void clickAndWaitForServer(int slotID) {
 		//System.out.println("hey");
 		assert minecraft.gameMode != null;
-		minecraft.gameMode.handleInventoryMouseClick(handler.containerId, slotID, 0, ClickType.PICKUP, minecraft.player);
+		minecraft.gameMode.handleContainerInput(handler.containerId, slotID, 0, ContainerInput.PICKUP, minecraft.player);
 		waitingForServer = true;
 	}
 

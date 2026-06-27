@@ -10,6 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
+import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
@@ -140,9 +141,9 @@ public class ItemTab extends GridLayoutTab {
 		private final LinearLayout layout = LinearLayout.vertical().spacing(5);
 
 		private ItemSelector() {
-			super(0, 20, 0, 0, Component.literal("Item Selector"));
+			super(0, 20, 0, 0, Component.literal("Item Selector"), AbstractScrollArea.defaultSettings(8));
 			layout.addChild(SpacerElement.height(32)); // ITEM
-			selectItemButton = layout.addChild(Button.builder(Component.literal("Select Item"), b ->
+			selectItemButton = layout.addChild(Button.builder(Component.literal("Select Item"), _ ->
 					Minecraft.getInstance().setScreen(new ItemSelectPopup(parentScreen, ItemTab.this::setCurrentItem))
 			).width(Button.SMALL_WIDTH).build());
 			layout.arrangeElements();
@@ -178,7 +179,7 @@ public class ItemTab extends GridLayoutTab {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, INNER_SPACE_TEXTURE, getX(), getY(), getWidth(), getHeight());
 			Matrix3x2fStack matrices = graphics.pose();
 			matrices.pushMatrix();
@@ -191,7 +192,7 @@ public class ItemTab extends GridLayoutTab {
 			matrices.scale(2);
 			graphics.item(currentItem, 0, 0);
 			matrices.popMatrix();
-			selectItemButton.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+			selectItemButton.extractRenderState(graphics, mouseX, mouseY, a);
 		}
 
 		@Override
@@ -208,7 +209,7 @@ public class ItemTab extends GridLayoutTab {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 			int x = glintButton.getX() - 3;
 			int y = glintButton.getY() - 3;
 			graphics.blitSprite(RenderPipelines.GUI_TEXTURED,

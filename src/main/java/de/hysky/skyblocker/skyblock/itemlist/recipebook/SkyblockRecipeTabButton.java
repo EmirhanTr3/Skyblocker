@@ -14,12 +14,12 @@ public class SkyblockRecipeTabButton extends ImageButton {
 	private boolean selected;
 
 	protected SkyblockRecipeTabButton(ItemStack icon) {
-		super(0, 0, 35, 27, RecipeBookTabButton.SPRITES, _ignored -> {});
+		super(0, 0, 35, 27, RecipeBookTabButton.SPRITES, _ -> {});
 		this.icon = icon;
 	}
 
 	@Override
-	public void renderContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	public void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
 		if (this.sprites != null) {
 			int x = this.getX();
 
@@ -38,9 +38,9 @@ public class SkyblockRecipeTabButton extends ImageButton {
 	}
 
 	@Override
-	protected void handleCursor(GuiGraphicsExtractor graphics) {
+	protected void handleCursor(GuiGraphicsExtractor context) {
 		if (!this.selected) {
-			super.handleCursor(graphics);
+			super.handleCursor(context);
 		}
 	}
 

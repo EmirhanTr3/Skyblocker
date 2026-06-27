@@ -35,14 +35,14 @@ public class SpeedPresetsScreen extends Screen {
 
 		LinearLayout footerLayout = LinearLayout.horizontal();
 		footerLayout.addChild(Button.builder(CommonComponents.GUI_DONE,
-						button -> {
+						_ -> {
 							this.list.save();
 							this.minecraft.setScreen(parent);
 						})
 				.width(Math.max(font.width(CommonComponents.GUI_DONE) + 8, 100))
 				.build(), s -> s.paddingRight(2));
 		footerLayout.addChild(Button.builder(Component.literal("+"),
-						button -> list.newEntry())
+						_ -> list.newEntry())
 				.width(20)
 				.build(), s -> s.paddingLeft(2));
 		layout.addToFooter(footerLayout);

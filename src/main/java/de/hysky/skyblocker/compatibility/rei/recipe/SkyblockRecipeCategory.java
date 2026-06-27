@@ -70,15 +70,15 @@ public class SkyblockRecipeCategory implements DisplayCategory<SkyblockRecipeDis
 			out.add(Widgets.createSlot(new Point(inputSlot.x() + bounds.getX(), inputSlot.y() + bounds.getY()))
 					.markInput()
 					.backgroundEnabled(inputSlot.showBackground())
-					.entry(EntryStacks.of(inputSlot.stack())));
+					.entry(EntryStacks.of(inputSlot.stack().getStackOrThrow())));
 		}
 		for (SkyblockRecipe.RecipeSlot outputSlot : recipe.getOutputSlots(bounds.getWidth(), bounds.getHeight())) {
 			out.add(Widgets.createSlot(new Point(outputSlot.x() + bounds.getX(), outputSlot.y() + bounds.getY()))
 					.markOutput()
 					.backgroundEnabled(outputSlot.showBackground())
-					.entry(EntryStacks.of(outputSlot.stack())));
+					.entry(EntryStacks.of(outputSlot.stack().getStackOrThrow())));
 		}
-		out.add(Widgets.createDrawableWidget((context, mouseX, mouseY, delta) -> {
+		out.add(Widgets.createDrawableWidget((context, mouseX, mouseY, _) -> {
 			Matrix3x2fStack matrices = context.pose();
 			matrices.pushMatrix();
 			matrices.translate(bounds.getX(), bounds.getY());

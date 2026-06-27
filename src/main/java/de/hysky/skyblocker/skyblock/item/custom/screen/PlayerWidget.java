@@ -33,12 +33,12 @@ public class PlayerWidget extends AbstractWidget {
 	@Override
 	protected void onDrag(MouseButtonEvent click, double offsetX, double offsetY) {
 		super.onDrag(click, offsetX, offsetY);
-		this.xRotation = Mth.clamp(this.xRotation - (float) offsetY * 2.5F, -50.0F, 50.0F);
-		this.yRotation += (float) offsetX * 2.5F;
+		this.xRotation = Mth.clamp(this.xRotation - (float) offsetY * 2.5f, -50.0f, 50.0f);
+		this.yRotation += (float) offsetX * 2.5f;
 	}
 
 	@Override
-	protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, INNER_SPACE_TEXTURE, getX(), getY(), getWidth(), getHeight());
 
 		float size = 64f;

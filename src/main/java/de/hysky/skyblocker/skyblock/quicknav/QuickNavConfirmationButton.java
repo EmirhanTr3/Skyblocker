@@ -29,8 +29,8 @@ public class QuickNavConfirmationButton extends QuickNavButton {
 	}
 
 	@Override
-	public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		super.renderWidget(graphics, mouseX, mouseY, delta);
+	public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+		super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
 		if (toggled()) return;
 		if (isDoubleClick() == showingConfirmTooltip) return;
 		showingConfirmTooltip = !showingConfirmTooltip;
@@ -43,7 +43,7 @@ public class QuickNavConfirmationButton extends QuickNavButton {
 			super.playDownSound(soundManager);
 			return;
 		}
-		soundManager.play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_CHIME, 1.0F));
+		soundManager.play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_CHIME, 1.0f));
 	}
 
 	@Override

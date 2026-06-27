@@ -26,7 +26,7 @@ public class ItemBackgroundManager {
 		}
 
 		// Hook into screen changes for per-background logic
-		ScreenEvents.BEFORE_INIT.register((client, screen, width, height) -> {
+		ScreenEvents.BEFORE_INIT.register((_, screen, _, _) -> {
 			String title = screen.getTitle().getString();
 
 			for (ColoredItemBackground<?> background : BACKGROUNDS) {
@@ -39,14 +39,14 @@ public class ItemBackgroundManager {
 	 * Attempts to draw all enabled item backgrounds on a single {@link ItemStack}.
 	 *
 	 * @param stack   The {@link ItemStack} to check
-	 * @param graphics The {@link GuiGraphicsExtractor} to use for rendering
+	 * @param context The {@link GuiGraphics} to use for rendering
 	 * @param x       X position of the item
 	 * @param y       Y position of the item
 	 */
 	public static void drawBackgrounds(ItemStack stack, GuiGraphicsExtractor graphics, int x, int y) {
 		for (ColoredItemBackground<?> background : BACKGROUNDS) {
 			if (background.isEnabled()) {
-				background.tryDraw(stack, graphics, x, y);
+				background.tryExtract(stack, graphics, x, y);
 			}
 		}
 	}

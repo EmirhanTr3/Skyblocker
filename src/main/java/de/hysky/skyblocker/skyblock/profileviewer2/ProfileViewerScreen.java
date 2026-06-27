@@ -114,11 +114,11 @@ public final class ProfileViewerScreen extends AbstractProfileViewerScreen {
 		// Reposition everything that is rendering
 		//this.repositionElements();
 		// Render the unselected buttons under the background
-		this.renderTabButtons(graphics, mouseX, mouseY, a, false);
+		this.extractTabButtons(graphics, mouseX, mouseY, a, false);
 		// Render the background
 		super.extractRenderState(graphics, mouseX, mouseY, a);
 		// Render the selected tab on top of the background
-		this.renderTabButtons(graphics, mouseX, mouseY, a, true);
+		this.extractTabButtons(graphics, mouseX, mouseY, a, true);
 
 		ProfileViewerPage<?> selectedPage = this.getSelectedPage();
 
@@ -142,7 +142,7 @@ public final class ProfileViewerScreen extends AbstractProfileViewerScreen {
 		}
 	}
 
-	private void renderTabButtons(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, boolean onlySelected) {
+	private void extractTabButtons(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, boolean onlySelected) {
 		for (PageTabWidget tabWidget : this.tabWidgets) {
 			// We need to render the selected tab button behind the screen
 			if (onlySelected && this.tabWidgets.indexOf(tabWidget) != this.selectedPageIndex) {

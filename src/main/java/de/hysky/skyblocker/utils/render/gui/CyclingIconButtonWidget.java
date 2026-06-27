@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.GuiGraphicsExtractor.HoveredTextEffects;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -56,16 +55,16 @@ public class CyclingIconButtonWidget<T> extends AbstractButton {
 	}
 
 	@Override
-	protected void renderContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
-		this.renderDefaultSprite(graphics);
+	protected void extractContents(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+		this.extractDefaultSprite(context);
 		int x = this.showText ? (this.getX() + this.getWidth() - this.currentIcon.width() - 2) : (this.getX() + this.getWidth() / 2 - this.currentIcon.width() / 2);
 		int y = this.getY() + this.getHeight() / 2 - this.currentIcon.height() / 2;
-		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.currentIcon.id(), x, y, this.currentIcon.width(), this.currentIcon.height(), this.alpha);
-		this.renderDefaultLabel(graphics.textRenderer(HoveredTextEffects.NONE));
+		context.blitSprite(RenderPipelines.GUI_TEXTURED, this.currentIcon.id(), x, y, this.currentIcon.width(), this.currentIcon.height(), this.alpha);
+		this.extractDefaultLabel(context.textRenderer(GuiGraphicsExtractor.HoveredTextEffects.NONE));
 	}
 
 	@Override
-	public void renderDefaultLabel(ActiveTextCollector drawer) {
+	public void extractDefaultLabel(ActiveTextCollector drawer) {
 		if (!showText) return;
 		int x1 = this.getX() + 2;
 		int x2 = this.getX() + this.getWidth() - this.currentIcon.width() - 4;

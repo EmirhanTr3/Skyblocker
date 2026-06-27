@@ -14,11 +14,12 @@ import de.hysky.skyblocker.skyblock.item.tooltip.info.TooltipInfoType;
 import de.hysky.skyblocker.skyblock.item.wikilookup.WikiLookupManager;
 import de.hysky.skyblocker.skyblock.itemlist.ItemRepository;
 import de.hysky.skyblocker.skyblock.itemlist.recipebook.SkyblockRecipeResultButton;
+import de.hysky.skyblocker.skyblock.tabhud.util.Ico;
+import de.hysky.skyblocker.utils.FlexibleItemStack;
 import de.hysky.skyblocker.utils.ItemUtils;
 import de.hysky.skyblocker.utils.NEURepoManager;
 import de.hysky.skyblocker.utils.container.ContainerSolverManager;
 import de.hysky.skyblocker.utils.hoveredItem.HoveredItemStackProvider;
-import it.unimi.dsi.fastutil.doubles.DoubleBooleanPair;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -36,6 +37,7 @@ import net.minecraft.client.gui.screens.recipebook.RecipeBookPage;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookTabButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
+import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.GridLayout;
@@ -91,7 +93,7 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 		if (!SkyblockerConfigManager.get().general.itemTooltip.enableAccessoriesHelper || !SkyblockerConfigManager.get().helpers.enableAccessoriesHelperWidget) return;
 		final AccessoriesHelperWidget widget = new AccessoriesHelperWidget();
 		widget.setY((screen.height - widget.getHeight()) / 2);
-		Screens.getButtons(screen).add(widget);
+		Screens.getWidgets(screen).add(widget);
 		final int previousX = ((AbstractContainerScreenAccessor) screen).getX();
 		final int offset = Math.max(180 - previousX, 0);
 		TabButton tabButton = new TabButton(button -> {
@@ -109,12 +111,12 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 				page = 0;
 			}
 		});
-		Screens.getButtons(screen).add(tabButton);
+		Screens.getWidgets(screen).add(tabButton);
 		tabButton.setToggled(open);
 	}
 
 	AccessoriesHelperWidget() {
-		super(0, 0, 147, 182, CommonComponents.EMPTY);
+		super(0, 0, 147, 182, CommonComponents.EMPTY, AbstractScrollArea.defaultSettings(4));
 		this.layout = new FrameLayout(getWidth() - BORDER_SIZE * 2, getHeight() - BORDER_SIZE * 2);
 		LinearLayout mainLayout = layout.addChild(LinearLayout.vertical());
 		mainLayout.defaultCellSetting().alignHorizontallyCenter();
@@ -135,7 +137,7 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 
 		mainLayout.addChild(CycleButton.builder(f -> Component.translatable(f.toString()), filter)
 				.withValues(Filter.values())
-				.create(0, 0, filterWidth, 16, Component.translatable("skyblocker.accessoryHelper.filter"), (b, v) -> {
+				.create(0, 0, filterWidth, 16, Component.translatable("skyblocker.accessoryHelper.filter"), (_, v) -> {
 					filter = v;
 					updateFilter();
 					changePage(0);
@@ -143,7 +145,7 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 		);
 		mainLayout.addChild(CycleButton.booleanBuilder(Component.translatable("skyblocker.accessoryHelper.highestTierOnly"), Component.translatable("skyblocker.accessoryHelper.allTiers"), showHighestTierOnly)
 				.displayOnlyValue()
-				.create(0, 0, filterWidth, 16, CommonComponents.EMPTY, (button, value) -> {
+				.create(0, 0, filterWidth, 16, CommonComponents.EMPTY, (_, value) -> {
 					showHighestTierOnly = value;
 					updateFilter();
 					changePage(0);
@@ -185,7 +187,7 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 
 	private void updateFilter() {
 		Predicate<AccessoryInfo> predicate = switch (filter) {
-			case ALL -> info -> true;
+			case ALL -> _ -> true;
 			case MISSING -> info -> info.highestOwned().isEmpty();
 			case UPGRADES -> info -> info.highestOwned().isPresent() && info.accessory().tier() > info.highestOwned().get().tier();
 		};
@@ -202,11 +204,11 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 	 * Checks bazaar, lbin and craft cost.
 	 */
 	private static OptionalDouble getPrice(Accessory acc) {
-		ItemStack stack = ItemRepository.getItemStack(acc.id());
+		FlexibleItemStack stack = ItemRepository.getItemStack(acc.id());
 		if (stack == null) return OptionalDouble.empty();
-		DoubleBooleanPair optionalPrice = ItemUtils.getItemPrice(stack);
+		OptionalDouble optionalPrice = ItemUtils.getItemPrice(stack);
 		double price;
-		if (optionalPrice.rightBoolean()) price = optionalPrice.firstDouble();
+		if (optionalPrice.isPresent()) price = optionalPrice.getAsDouble();
 		else price = ItemUtils.getCraftCost(stack.getNeuName());
 		if (price <= 0) return OptionalDouble.empty();
 		return OptionalDouble.of(price);
@@ -251,12 +253,12 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 	}
 
 	@Override
-	protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
+	protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, getX(), getY(), getWidth(), getHeight());
 		String prevHighlighted = AccessoriesContainerSolver.INSTANCE.highlightedAccessory;
 		AccessoriesContainerSolver.INSTANCE.highlightedAccessory = null;
 		for (AbstractWidget widget : widgets) {
-			widget.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+			widget.extractRenderState(graphics, mouseX, mouseY, a);
 		}
 		if (!ItemRepository.filesImported() || TooltipInfoType.ACCESSORIES.getData() == null) {
 			refreshWhenDoneLoading = true;
@@ -305,7 +307,7 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, textures.get(true, isHovered()), getX(), getY(), getWidth(), getHeight());
 			if (isHovered()) graphics.requestCursor(CursorTypes.POINTING_HAND);
 		}
@@ -320,12 +322,12 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 		private boolean toggled;
 
 		TabButton(Consumer<TabButton> onToggled) {
-			super(35, 27, RecipeBookTabButton.SPRITES, b -> {}, CommonComponents.EMPTY);
+			super(35, 27, RecipeBookTabButton.SPRITES, _ -> {}, CommonComponents.EMPTY);
 			this.onToggled = onToggled;
 		}
 
 		@Override
-		public void renderContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
+		public void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 			int x = this.getX();
 			if (this.toggled) x -= 2;
 
@@ -363,15 +365,15 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 
 		private void setSource(MagicPowerSource source) {
 			this.source = source;
-			setDisplayStack(source.icon());
+			setDisplayStack(source.icon().getStackOrThrow());
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-			super.renderWidget(graphics, mouseX, mouseY, delta);
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+			super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
 			ItemStack stack = getDisplayStack();
 			if (isHovered() && stack != null && source != null) {
-				source.drawTooltip(graphics, mouseX, mouseY);
+				source.extractTooltip(graphics, mouseX, mouseY);
 				graphics.requestCursor(CursorTypes.POINTING_HAND);
 			}
 		}
@@ -401,7 +403,7 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 			private final AccessoryInfo info;
 			private final @Nullable List<FormattedCharSequence> afterSelling;
 
-			private @Nullable ItemStack icon;
+			private @Nullable FlexibleItemStack icon;
 
 			private Source(AccessoryInfo info) {
 				this.info = info;
@@ -411,30 +413,30 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 						.flatMap(accStack -> {
 							OptionalDouble priceOpt = getPrice(info.accessory());
 							if (priceOpt.isEmpty()) return Optional.empty();
-							DoubleBooleanPair price = ItemUtils.getItemPrice(accStack);
-							if (!price.rightBoolean()) return Optional.empty();
+							OptionalDouble price = ItemUtils.getItemPrice(accStack);
+							if (price.isEmpty()) return Optional.empty();
 							Component translatable = Component.translatable(
 									"skyblocker.accessoryHelper.afterSelling",
-									ItemTooltip.getCoinsMessage(priceOpt.getAsDouble() - price.leftDouble(), 1),
-									accStack.getHoverName());
+									ItemTooltip.getCoinsMessage(priceOpt.getAsDouble() - price.getAsDouble(), 1),
+									accStack.getStackOrThrow().getHoverName());
 							return Optional.of(Minecraft.getInstance().font.split(translatable, 170));
 						})
 						.orElse(null);
 			}
 
 			@Override
-			public ItemStack icon() {
+			public FlexibleItemStack icon() {
 				return icon != null ? icon : (icon = Optional.ofNullable(ItemRepository.getItemStack(info.accessory().id())).orElse(ItemUtils.getItemIdPlaceholder(info.accessory().id())));
 			}
 
 			@Override
-			public void drawTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+			public void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
 				if (icon == null) {
 					return;
 				}
 				info.highestOwned().ifPresent(owned -> AccessoriesContainerSolver.INSTANCE.highlightedAccessory = owned.id());
 				Minecraft client = Minecraft.getInstance();
-				List<FormattedCharSequence> tooltip = Screen.getTooltipFromItem(client, icon).stream().map(Component::getVisualOrderText).collect(Util.toMutableList());
+				List<FormattedCharSequence> tooltip = Screen.getTooltipFromItem(client, icon.getStackOrThrow()).stream().map(Component::getVisualOrderText).collect(Util.toMutableList());
 				tooltip.add(smoothLine.getVisualOrderText());
 				if (afterSelling != null) {
 					tooltip.addAll(afterSelling);
@@ -454,10 +456,10 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 				if (info.highestOwned().isPresent()) {
 					OptionalDouble ownedPrice = getPrice(info.highestOwned().get());
 					price -= ownedPrice.orElse(0);
-					ItemStack stack = ItemRepository.getItemStack(info.highestOwned().get().id());
+					FlexibleItemStack stack = ItemRepository.getItemStack(info.highestOwned().get().id());
 					originalMP = stack != null ? stack.getSkyblockRarity().getMP() : 0;
 				}
-				ItemStack stack = ItemRepository.getItemStack(info.accessory().id());
+				FlexibleItemStack stack = ItemRepository.getItemStack(info.accessory().id());
 				if (stack == null) return Double.MAX_VALUE;
 				int mp = stack.getSkyblockRarity().getMP() - originalMP;
 				return mp <= 0 ? Double.MAX_VALUE : price / mp;
@@ -468,19 +470,19 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 				if (icon == null) return;
 				LocalPlayer player = Minecraft.getInstance().player;
 				if (player == null) return;
-				WikiLookupManager.openWiki(icon, player, !Minecraft.getInstance().hasShiftDown());
+				WikiLookupManager.openWiki(icon.getStackOrThrow(), player, !Minecraft.getInstance().hasShiftDown());
 			}
 		}
 	}
 
 	private static class RecombobulateSource implements MagicPowerSource {
-		private final ItemStack icon;
+		private final FlexibleItemStack icon;
 		private final double pricePerMp;
 		private final List<Component> tooltip;
 		private RecombobulateSource(SkyblockItemRarity rarity) {
-			this.icon = ItemRepository.getItemStack("RECOMBOBULATOR_3000", ItemStack.EMPTY);
-			DoubleBooleanPair pair = ItemUtils.getItemPrice("RECOMBOBULATOR_3000");
-			double price = pair.rightBoolean() ? pair.leftDouble() : 6000000;
+			this.icon = ItemRepository.getItemStack("RECOMBOBULATOR_3000", Ico.BARRIER);
+			OptionalDouble opt = ItemUtils.getItemPrice("RECOMBOBULATOR_3000");
+			double price = opt.orElse(6000000);
 			int mp = rarity.recombobulate().getMP() - rarity.getMP();
 			pricePerMp = mp <= 0 ? Double.MAX_VALUE : price / mp;
 			tooltip = List.of(
@@ -493,12 +495,12 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 		}
 
 		@Override
-		public ItemStack icon() {
+		public FlexibleItemStack icon() {
 			return icon;
 		}
 
 		@Override
-		public void drawTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+		public void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
 			Font textRenderer = Minecraft.getInstance().font;
 			graphics.setComponentTooltipForNextFrame(textRenderer, tooltip, mouseX, mouseY);
 		}
@@ -517,9 +519,9 @@ class AccessoriesHelperWidget extends AbstractContainerWidget implements Hovered
 	}
 
 	private interface MagicPowerSource {
-		ItemStack icon();
+		FlexibleItemStack icon();
 
-		void drawTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY);
+		void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY);
 
 		double pricePerMp();
 

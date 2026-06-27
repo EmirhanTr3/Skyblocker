@@ -11,8 +11,8 @@ import de.hysky.skyblocker.skyblock.item.custom.CustomArmorTrims;
 import de.hysky.skyblocker.utils.Utils;
 import de.hysky.skyblocker.utils.scheduler.Scheduler;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.ChatFormatting;
@@ -58,16 +58,16 @@ public class CustomizeScreen extends Screen {
 
 	@Init
 	public static void initThings() {
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(
-				ClientCommandManager.literal(SkyblockerMod.NAMESPACE).then(ClientCommandManager.literal("custom").executes(Scheduler.queueOpenScreenCommand(() -> new CustomizeScreen(null, false))))
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> dispatcher.register(
+				ClientCommands.literal(SkyblockerMod.NAMESPACE).then(ClientCommands.literal("custom").executes(Scheduler.queueOpenScreenCommand(() -> new CustomizeScreen(null, false))))
 		));
-		ScreenEvents.AFTER_INIT.register((client1, screen, scaledWidth, scaledHeight) -> {
+		ScreenEvents.AFTER_INIT.register((_, screen, _, _) -> {
 			if (Utils.isOnSkyblock() && SkyblockerConfigManager.get().uiAndVisuals.showCustomizeButton && screen instanceof InventoryScreen inventoryScreen) {
 				CustomizeButton button = new CustomizeButton(
 						((AbstractContainerScreenAccessor) inventoryScreen).getX() + 63,
 						((AbstractContainerScreenAccessor) inventoryScreen).getY() + 10
 				);
-				Screens.getButtons(inventoryScreen).add(button);
+				Screens.getWidgets(inventoryScreen).add(button);
 				inventoryScreen.registerRecipeBookToggleCallback(() -> button.setPosition(
 						((AbstractContainerScreenAccessor) inventoryScreen).getX() + 63,
 						((AbstractContainerScreenAccessor) inventoryScreen).getY() + 10
@@ -118,8 +118,8 @@ public class CustomizeScreen extends Screen {
 		tabNavigation.selectTab(item ? 1 : 0, false);
 		addRenderableWidget(tabNavigation);
 
-		addRenderableWidget(footerLayout.addChild(Button.builder(Component.translatable("gui.cancel"), b -> cancel()).build()));
-		addRenderableWidget(footerLayout.addChild(Button.builder(Component.translatable("gui.done"), b -> onClose()).build()));
+		addRenderableWidget(footerLayout.addChild(Button.builder(Component.translatable("gui.cancel"), _ -> cancel()).build()));
+		addRenderableWidget(footerLayout.addChild(Button.builder(Component.translatable("gui.done"), _ -> onClose()).build()));
 		footerLayout.arrangeElements();
 		repositionElements();
 	}
@@ -182,16 +182,16 @@ public class CustomizeScreen extends Screen {
 	@Override
 	protected void repositionElements() {
 		int i = tabNavigation.getRectangle().bottom();
-		tabNavigation.setWidth(width);
+		tabNavigation.updateWidth(width);
 		tabNavigation.arrangeElements();
 		footerLayout.setPosition((width - footerLayout.getWidth()) / 2, height - footerLayout.getHeight() - 5);
 		tabManager.setTabArea(new ScreenRectangle(0, i, width, footerLayout.getY() - i - 2));
 	}
 
 	@Override
-	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		super.extractRenderState(graphics, mouseX, mouseY, delta);
-		//graphics.drawCenteredTextWithShadow(textRenderer, getTitle(), this.width / 2, footerLayout.getY() + footerLayout.getHeight() + 2, Colors.WHITE);
+	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+		super.extractRenderState(graphics, mouseX, mouseY, a);
+		//context.drawCenteredTextWithShadow(textRenderer, getTitle(), this.width / 2, footerLayout.getY() + footerLayout.getHeight() + 2, Colors.WHITE);
 	}
 
 	@Override
@@ -231,7 +231,7 @@ public class CustomizeScreen extends Screen {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, getX(), getY(), getWidth(), getHeight(), isHovered() ? 0xFFFAFA96 : 0x80FFFFFF);
 			this.handleCursor(graphics);
 		}

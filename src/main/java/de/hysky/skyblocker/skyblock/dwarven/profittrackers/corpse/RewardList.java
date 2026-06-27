@@ -112,7 +112,7 @@ public class RewardList extends ContainerObjectSelectionList<RewardList.Abstract
 		protected List<AbstractWidget> children;
 
 		@Override
-		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {}
+		public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {}
 
 		public void repositionElements(int x, int y, int width, int height) {}
 
@@ -148,11 +148,11 @@ public class RewardList extends ContainerObjectSelectionList<RewardList.Abstract
 		}
 
 		@Override
-		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
-			if (drawBorder) GuiHelper.drawBorder(graphics, this.getX(), this.getY(), this.getWidth(), this.getHeight() + 1, BORDER_COLOR);
+		public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+			if (drawBorder) GuiHelper.border(graphics, this.getX(), this.getY(), this.getWidth(), this.getHeight() + 1, BORDER_COLOR);
 			for (var child : children) {
 				child.setY(getY() + INNER_MARGIN);
-				child.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+				child.extractRenderState(graphics, mouseX, mouseY, a);
 			}
 		}
 
@@ -215,36 +215,36 @@ public class RewardList extends ContainerObjectSelectionList<RewardList.Abstract
 		// Name  | amount | total price | price per unit
 		// 33.3% | 16.6%  | 25%         | 25%
 		@Override
-		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
 			int x = this.getX();
 			int y = this.getY();
 			int entryWidth = this.getWidth();
 			int entryHeight = this.getHeight();
 			// The +1 is to make the borders stack on top of each other
-			GuiHelper.drawBorder(graphics, x, y, entryWidth, entryHeight + 1, BORDER_COLOR);
-			GuiHelper.drawBorder(graphics, x + entryWidth / 3, y, entryWidth / 6 + 2, entryHeight + 1, BORDER_COLOR);
-			GuiHelper.drawBorder(graphics, x + entryWidth / 2, y, entryWidth / 4, entryHeight + 1, BORDER_COLOR);
+			GuiHelper.border(graphics, x, y, entryWidth, entryHeight + 1, BORDER_COLOR);
+			GuiHelper.border(graphics, x + entryWidth / 3, y, entryWidth / 6 + 2, entryHeight + 1, BORDER_COLOR);
+			GuiHelper.border(graphics, x + entryWidth / 2, y, entryWidth / 4, entryHeight + 1, BORDER_COLOR);
 
 			int entryY = y + INNER_MARGIN;
 			if (itemName != null) {
 				itemName.setY(entryY);
 				itemName.setMaxWidth(entryWidth / 3 - 2 * INNER_MARGIN, StringWidget.TextOverflow.SCROLLING);
-				itemName.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+				itemName.extractRenderState(graphics, mouseX, mouseY, a);
 			}
 
 			if (amount != null) {
 				amount.setY(entryY);
-				amount.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+				amount.extractRenderState(graphics, mouseX, mouseY, a);
 			}
 
 			if (totalPrice != null) {
 				totalPrice.setY(entryY);
-				totalPrice.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+				totalPrice.extractRenderState(graphics, mouseX, mouseY, a);
 			}
 
 			if (pricePerUnit != null) {
 				pricePerUnit.setY(entryY);
-				pricePerUnit.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+				pricePerUnit.extractRenderState(graphics, mouseX, mouseY, a);
 			}
 		}
 

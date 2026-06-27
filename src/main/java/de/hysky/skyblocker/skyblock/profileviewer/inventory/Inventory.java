@@ -91,7 +91,7 @@ public class Inventory implements ProfileViewerPage {
 
 			graphics.item(stack, x, y);
 			graphics.itemDecorations(textRenderer, stack, x, y);
-			SlotTextManager.renderSlotText(graphics, textRenderer, null, stack, i, x, y);
+			SlotTextManager.extractSlotText(graphics, textRenderer, null, stack, i, x, y);
 
 			if (mouseX > x - 2 && mouseX < x + 16 + 1 && mouseY > y - 2 && mouseY < y + 16 + 1) {
 				tooltip = stack.getTooltipLines(Item.TooltipContext.EMPTY, CLIENT.player, CLIENT.options.advancedItemTooltips ? TooltipFlag.ADVANCED : TooltipFlag.NORMAL);

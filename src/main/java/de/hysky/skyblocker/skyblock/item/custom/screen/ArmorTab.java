@@ -11,8 +11,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.GuiGraphicsExtractor.HoveredTextEffects;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
+import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
@@ -187,7 +187,7 @@ public class ArmorTab extends GridLayoutTab implements Closeable {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_TEXTURE, getX() + 1, getY() + 1, 82, 22);
 
 			int hoveredSlot = -1;
@@ -240,7 +240,7 @@ public class ArmorTab extends GridLayoutTab implements Closeable {
 		private final IdentifierTextField field;
 
 		private ModelFieldContainer(int width, int height) {
-			super(0, 0, width, height, Component.empty());
+			super(0, 0, width, height, Component.empty(), AbstractScrollArea.defaultSettings(4));
 			containerLayout = new FrameLayout();
 			field = containerLayout.addChild(new IdentifierTextField(width - 10, 20, identifier -> {
 				String uuid = armor[selectedSlot].getUuid();
@@ -293,7 +293,7 @@ public class ArmorTab extends GridLayoutTab implements Closeable {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 			if (!visible) return;
 			graphics.blitSprite(RenderPipelines.GUI_TEXTURED,
 					INNER_SPACE_TEXTURE,
@@ -302,11 +302,11 @@ public class ArmorTab extends GridLayoutTab implements Closeable {
 					getWidth(),
 					getHeight()
 			);
-			this.field.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
-			this.drawLabel(graphics.textRenderer(HoveredTextEffects.NONE));
+			this.field.extractRenderState(graphics, mouseX, mouseY, a);
+			this.extractLabel(graphics.textRenderer(GuiGraphicsExtractor.HoveredTextEffects.NONE));
 		}
 
-		private void drawLabel(ActiveTextCollector drawer) {
+		private void extractLabel(ActiveTextCollector drawer) {
 			int padding = 5;
 			int startY = getY() + padding;
 			drawer.acceptScrollingWithDefaultCenter(text, getX() + padding, getRight() - padding, startY, startY + 9);

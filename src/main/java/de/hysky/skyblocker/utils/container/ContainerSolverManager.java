@@ -94,9 +94,9 @@ public class ContainerSolverManager {
 
 	@Init
 	public static void init() {
-		ScreenEvents.BEFORE_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+		ScreenEvents.BEFORE_INIT.register((_, screen, _, _) -> {
 			if (Utils.isOnSkyblock() && screen instanceof ContainerScreen genericContainerScreen) {
-				ScreenEvents.remove(screen).register(screen1 -> clearScreen());
+				ScreenEvents.remove(screen).register(_ -> clearScreen());
 				onSetScreen(genericContainerScreen);
 			} else {
 				clearScreen();
@@ -147,20 +147,20 @@ public class ContainerSolverManager {
 		return currentSolver != null && currentSolver.onClickSlot(slot, stack, screenId, button);
 	}
 
-	public static void onDraw(GuiGraphicsExtractor graphics, AbstractContainerScreen<ChestMenu> handledScreen, List<Slot> slots) {
+	public static void onExtract(GuiGraphicsExtractor context, AbstractContainerScreen<ChestMenu> handledScreen, List<Slot> slots) {
 		if (currentSolver == null) return;
 
-		graphics.pose().pushMatrix();
-		graphics.pose().translate(((AbstractContainerScreenAccessor) handledScreen).getX(), ((AbstractContainerScreenAccessor) handledScreen).getY());
+		context.pose().pushMatrix();
+		context.pose().translate(((AbstractContainerScreenAccessor) handledScreen).getX(), ((AbstractContainerScreenAccessor) handledScreen).getY());
 
 		if (highlights == null) highlights = currentSolver.getColors(slotMap(currentSolver instanceof ContainerAndInventorySolver ? slots : slots.subList(0, handledScreen.getMenu().getRowCount() * 9)));
 		for (ColorHighlight highlight : highlights) {
 			Slot slot = slots.get(highlight.slot());
 			int color = highlight.color();
-			graphics.fill(slot.x, slot.y, slot.x + 16, slot.y + 16, color);
+			context.fill(slot.x, slot.y, slot.x + 16, slot.y + 16, color);
 		}
 
-		graphics.pose().popMatrix();
+		context.pose().popMatrix();
 	}
 
 	public static Int2ObjectMap<ItemStack> slotMap(List<Slot> slots) {

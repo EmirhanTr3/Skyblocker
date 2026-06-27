@@ -1,6 +1,7 @@
 package de.hysky.skyblocker.skyblock.events;
 
 import de.hysky.skyblocker.SkyblockerMod;
+import de.hysky.skyblocker.utils.FlexibleItemStack;
 import de.hysky.skyblocker.utils.time.SkyblockTime;
 import java.util.List;
 import net.minecraft.ChatFormatting;
@@ -15,7 +16,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonColors;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.item.ItemStack;
 
 public class EventToast implements Toast {
 	protected static final Identifier TEXTURE = SkyblockerMod.id("notification");
@@ -28,11 +28,11 @@ public class EventToast implements Toast {
 	protected final List<FormattedCharSequence> messageNow;
 	protected int messageWidth;
 	protected int messageNowWidth;
-	protected final ItemStack icon;
+	protected final FlexibleItemStack icon;
 
 	protected boolean started;
 
-	public EventToast(long eventStartTime, long eventEndTime, String name, ItemStack icon) {
+	public EventToast(long eventStartTime, long eventEndTime, String name, FlexibleItemStack icon) {
 		this.eventStartTime = eventStartTime;
 		this.eventEndTime = eventEndTime;
 
@@ -49,17 +49,17 @@ public class EventToast implements Toast {
 	}
 
 	@Override
-	public void render(GuiGraphicsExtractor graphics, Font textRenderer, long startTime) {
+	public void extractRenderState(GuiGraphicsExtractor graphics, Font textRenderer, long startTime) {
 		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, 0, 0, width(), height());
 
 		int y = (height() - getInnerContentsHeight())/2;
-		y = 2 + drawMessage(graphics, 30, y, CommonColors.WHITE);
-		drawTimer(graphics, 30, y);
+		y = 2 + extractMessage(graphics, 30, y, CommonColors.WHITE);
+		extractTimer(graphics, 30, y);
 
-		graphics.fakeItem(icon, 8, height()/2 - 8);
+		graphics.fakeItem(icon.getStackOrThrow(), 8, height()/2 - 8);
 	}
 
-	protected int drawMessage(GuiGraphicsExtractor graphics, int x, int y, int color) {
+	protected int extractMessage(GuiGraphicsExtractor graphics, int x, int y, int color) {
 		Font textRenderer = Minecraft.getInstance().font;
 		for (FormattedCharSequence orderedText : started ? messageNow : message) {
 			graphics.text(textRenderer, orderedText, x, y, color, false);
@@ -68,7 +68,7 @@ public class EventToast implements Toast {
 		return y;
 	}
 
-	protected void drawTimer(GuiGraphicsExtractor graphics, int x, int y) {
+	protected void extractTimer(GuiGraphicsExtractor graphics, int x, int y) {
 		long currentTime = System.currentTimeMillis() / 1000;
 		int timeTillEvent = (int) (eventStartTime - currentTime);
 		started = timeTillEvent < 0;

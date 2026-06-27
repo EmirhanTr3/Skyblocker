@@ -17,7 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -187,7 +187,7 @@ public class PartyEntry extends ContainerObjectSelectionList.Entry<PartyEntry> {
 	}
 
 	@Override
-	public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+	public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
 		int x = this.getX();
 		int y = this.getY();
 		int entryWidth = this.getWidth();
@@ -212,12 +212,12 @@ public class PartyEntry extends ContainerObjectSelectionList.Entry<PartyEntry> {
 				graphics.text(textRenderer, "H", 160, 6, CommonColors.WHITE, true);
 			}
 		}
-		PlayerFaceRenderer.draw(graphics, partyLeaderSkin, 6, 6, 8, true, false, -1);
+		PlayerFaceExtractor.extractRenderState(graphics, partyLeaderSkin, 6, 6, 8, true, false, -1);
 		for (int i = 0; i < partyMembers.length; i++) {
 			Player partyMember = partyMembers[i];
 			if (partyMember == null) continue;
 			graphics.text(textRenderer, partyMember.toText(), 17 + 136 * (i % 2), 24 + 14 * (i / 2), CommonColors.WHITE);
-			PlayerFaceRenderer.draw(graphics, partyMember.skinTexture, 6 + 136 * (i % 2), 24 + 14 * (i / 2), 8, true, false, -1);
+			PlayerFaceExtractor.extractRenderState(graphics, partyMember.skinTexture, 6 + 136 * (i % 2), 24 + 14 * (i / 2), 8, true, false, -1);
 		}
 
 		if (minClassLevel > 0) {
@@ -304,7 +304,7 @@ public class PartyEntry extends ContainerObjectSelectionList.Entry<PartyEntry> {
 		}
 
 		@Override
-		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
 			Font textRenderer = Minecraft.getInstance().font;
 			graphics.centeredText(textRenderer, Component.translatable("skyblocker.partyFinder.noParties"), this.getX() + this.getWidth() / 2, this.getY() + this.getHeight() / 2 - textRenderer.lineHeight / 2, CommonColors.WHITE);
 		}
@@ -319,8 +319,8 @@ public class PartyEntry extends ContainerObjectSelectionList.Entry<PartyEntry> {
 		}
 
 		@Override
-		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
-			super.renderContent(graphics, mouseX, mouseY, hovered, deltaTicks);
+		public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+			super.extractContent(graphics, mouseX, mouseY, hovered, a);
 
 			Matrix3x2fStack matrices = graphics.pose();
 			matrices.pushMatrix();

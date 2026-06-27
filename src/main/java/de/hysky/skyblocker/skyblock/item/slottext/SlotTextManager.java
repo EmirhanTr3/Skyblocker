@@ -15,10 +15,12 @@ import de.hysky.skyblocker.skyblock.item.slottext.adders.ChipLevelAdder;
 import de.hysky.skyblocker.skyblock.item.slottext.adders.ChoosePetLevelAdder;
 import de.hysky.skyblocker.skyblock.item.slottext.adders.CollectionAdder;
 import de.hysky.skyblocker.skyblock.item.slottext.adders.CommunityShopAdder;
+import de.hysky.skyblocker.skyblock.item.slottext.adders.CropMilestonesAdder;
 import de.hysky.skyblocker.skyblock.item.slottext.adders.EnchantmentAbbreviationAdder;
 import de.hysky.skyblocker.skyblock.item.slottext.adders.EnchantmentLevelAdder;
 import de.hysky.skyblocker.skyblock.item.slottext.adders.EssenceShopAdder;
 import de.hysky.skyblocker.skyblock.item.slottext.adders.EvolvingItemAdder;
+import de.hysky.skyblocker.skyblock.item.slottext.adders.GardenUpgradesAdder;
 import de.hysky.skyblocker.skyblock.item.slottext.adders.HotfPerkLevelAdder;
 import de.hysky.skyblocker.skyblock.item.slottext.adders.HotmPerkLevelAdder;
 import de.hysky.skyblocker.skyblock.item.slottext.adders.HuntingToolkitIndicatorAdder;
@@ -39,7 +41,7 @@ import de.hysky.skyblocker.skyblock.radialMenu.RadialMenuScreen;
 import de.hysky.skyblocker.utils.Utils;
 import de.hysky.skyblocker.utils.container.SlotTextAdder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
 import net.minecraft.client.KeyMapping;
@@ -94,9 +96,11 @@ public class SlotTextManager {
 			new BestiaryLevelAdder(),
 			new HuntingToolkitIndicatorAdder(),
 			new ChipLevelAdder(),
+			new CropMilestonesAdder(),
+			new GardenUpgradesAdder(),
 	};
 	private static final ArrayList<SlotTextAdder> currentScreenAdders = new ArrayList<>();
-	private static final KeyMapping keyBinding = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.skyblocker.slottext", GLFW.GLFW_KEY_LEFT_ALT, SkyblockerMod.KEYBINDING_CATEGORY));
+	public static final KeyMapping KEY_MAPPING = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.skyblocker.slottext", GLFW.GLFW_KEY_LEFT_ALT, SkyblockerMod.KEYBINDING_CATEGORY));
 	private static boolean keyHeld = false;
 
 	private SlotTextManager() {
@@ -104,19 +108,19 @@ public class SlotTextManager {
 
 	@Init
 	public static void init() {
-		ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
+		ScreenEvents.AFTER_INIT.register((_, screen, _, _) -> {
 			if ((screen instanceof AbstractContainerScreen<?> && Utils.isOnSkyblock()) || screen instanceof ProfileViewerScreen || screen instanceof RadialMenuScreen) {
 				onScreenChange(screen);
-				ScreenEvents.remove(screen).register(ignored -> currentScreenAdders.clear());
+				ScreenEvents.remove(screen).register(_ -> currentScreenAdders.clear());
 			}
-			ScreenKeyboardEvents.afterKeyPress(screen).register((screen1, input) -> {
-				if (keyBinding.matches(input)) {
+			ScreenKeyboardEvents.afterKeyPress(screen).register((_, input) -> {
+				if (KEY_MAPPING.matches(input)) {
 					SkyblockerConfigManager.get().uiAndVisuals.slotText.slotTextToggled = !SkyblockerConfigManager.get().uiAndVisuals.slotText.slotTextToggled;
 					keyHeld = true;
 				}
 			});
-			ScreenKeyboardEvents.afterKeyRelease(screen).register((screen1, input) -> {
-				if (keyBinding.matches(input)) {
+			ScreenKeyboardEvents.afterKeyRelease(screen).register((_, input) -> {
+				if (KEY_MAPPING.matches(input)) {
 					keyHeld = false;
 				}
 			});
@@ -147,11 +151,11 @@ public class SlotTextManager {
 		return text;
 	}
 
-	public static void renderSlotText(GuiGraphicsExtractor graphics, Font textRenderer, Slot slot) {
-		renderSlotText(graphics, textRenderer, slot, slot.getItem(), slot.index, slot.x, slot.y);
+	public static void extractSlotText(GuiGraphicsExtractor graphics, Font textRenderer, Slot slot) {
+		extractSlotText(graphics, textRenderer, slot, slot.getItem(), slot.index, slot.x, slot.y);
 	}
 
-	public static void renderSlotText(GuiGraphicsExtractor graphics, Font textRenderer, @Nullable Slot slot, ItemStack stack, int slotId, int x, int y) {
+	public static void extractSlotText(GuiGraphicsExtractor graphics, Font textRenderer, @Nullable Slot slot, ItemStack stack, int slotId, int x, int y) {
 		List<SlotText> textList = getText(slot, stack, slotId);
 		if (textList.isEmpty()) return;
 		Matrix3x2fStack matrices = graphics.pose();

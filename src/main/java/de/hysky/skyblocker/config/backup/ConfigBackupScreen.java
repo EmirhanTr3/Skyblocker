@@ -68,7 +68,7 @@ public class ConfigBackupScreen extends Screen {
 		detailsWidget.refreshScrollAmount();
 		addRenderableWidget(detailsWidget);
 
-		Button restoreBtn = Button.builder(Component.translatable("skyblocker.config.general.backup.restore"), b -> {
+		Button restoreBtn = Button.builder(Component.translatable("skyblocker.config.general.backup.restore"), _ -> {
 			Path selected = listWidget.getSelectedPath();
 			if (selected != null) {
 				minecraft.setScreen(new ConfirmScreen(confirm -> {
@@ -98,7 +98,7 @@ public class ConfigBackupScreen extends Screen {
 		}).size(90, 20).pos(width / 2 - 95, height - 28).build();
 		addRenderableWidget(restoreBtn);
 
-		Button done = Button.builder(CommonComponents.GUI_DONE, b -> onClose()).size(90, 20).pos(width / 2 + 5, height - 28).build();
+		Button done = Button.builder(CommonComponents.GUI_DONE, _ -> onClose()).size(90, 20).pos(width / 2 + 5, height - 28).build();
 		addRenderableWidget(done);
 
 		StringWidget titleWidget = new StringWidget(title, font);
@@ -135,7 +135,7 @@ public class ConfigBackupScreen extends Screen {
 				for (Path backup : backups) {
 					addEntry(new BackupEntry(backup));
 				}
-			} catch (IOException e) {
+			} catch (IOException _) {
 				// ignored
 			}
 		}
@@ -154,9 +154,9 @@ public class ConfigBackupScreen extends Screen {
 		}
 
 		@Override
-		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
-			graphics.centeredText(font, path.getFileName().toString(), this.getContentXMiddle(), this.getY() + 7, 0xFFFFFFFF);
-			if (isMouseOver(mouseX, mouseY)) graphics.requestCursor(CursorTypes.POINTING_HAND);
+		public void extractContent(GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+			context.centeredText(font, path.getFileName().toString(), this.getContentXMiddle(), this.getY() + 7, 0xFFFFFFFF);
+			if (isMouseOver(mouseX, mouseY)) context.requestCursor(CursorTypes.POINTING_HAND);
 		}
 
 		@Override
@@ -248,9 +248,9 @@ public class ConfigBackupScreen extends Screen {
 		}
 
 		@Override
-		protected void extractScrollbar(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-			super.extractScrollbar(graphics, mouseX, mouseY);
-			if (scrollbarVisible()) {
+		protected void extractScrollbar(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+			super.extractScrollbar(context, mouseX, mouseY);
+			if (this.scrollable()) {
 				int scrollBarX = scrollBarX();
 				int listWidgetY = getY();
 				int totalHeight = height + maxScrollAmount();
@@ -263,7 +263,7 @@ public class ConfigBackupScreen extends Screen {
 						// height - scrollbarThumbHeight - 2 because we draw a two pixel high indicator.
 						// scrollbarThumbHeight thumb height calculations so the changed line is in view when the indicator is in the middle of the scrollbar thumb.
 						int barY = entryY * (height - scrollbarThumbHeight - 2) / (totalHeight - defaultEntryHeight) + listWidgetY + scrollbarThumbHeight / 2;
-						graphics.fill(scrollBarX, barY, scrollBarX + 6, barY + 2, 0xFFFFFF55);
+						context.fill(scrollBarX, barY, scrollBarX + 6, barY + 2, 0xFFFFFF55);
 					}
 				}
 			}
@@ -290,7 +290,7 @@ public class ConfigBackupScreen extends Screen {
 		}
 
 		@Override
-		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
 			int color = 0xFFFFFFFF;
 			if (path != null && changedPaths.contains(path)) {
 				color = 0xFFFFFF55;

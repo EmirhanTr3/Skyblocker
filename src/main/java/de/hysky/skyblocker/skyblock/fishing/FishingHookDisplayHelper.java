@@ -24,7 +24,7 @@ public class FishingHookDisplayHelper {
 
 	@Init
 	public static void init() {
-		ClientPlayConnectionEvents.JOIN.register((_handler, _sender, _client) -> fishingHookArmorStand = null);
+		ClientPlayConnectionEvents.JOIN.register((_, _, _) -> fishingHookArmorStand = null);
 		HudElementRegistry.attachElementAfter(VanillaHudElements.TITLE_AND_SUBTITLE, FISHING_HOOK_DISPLAY, FishingHookDisplayHelper::render);
 	}
 
@@ -54,8 +54,8 @@ public class FishingHookDisplayHelper {
 
 			// Scale the text by 3x
 			graphics.pose().pushMatrix();
-			graphics.pose().scale(3.0F, 3.0F);
-			graphics.centeredText(client.font, armorStandName, (int) (x / 3.0F), (int) (y / 3.0F), 0xFFFFFF00);
+			graphics.pose().scale(3.0f, 3.0f);
+			graphics.centeredText(client.font, armorStandName, (int) (x / 3.0f), (int) (y / 3.0f), 0xFFFFFF00);
 			graphics.pose().popMatrix();
 		}
 		//else update the tab

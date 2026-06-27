@@ -62,7 +62,7 @@ public class WidgetManager {
 	// we probably want this to run pretty early?
 	@Init(priority = -1)
 	public static void init() {
-		ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+		ClientLifecycleEvents.CLIENT_STARTED.register(_ -> {
 
 			instantiateWidgets();
 			for (int i = 1; i < 6; i++) {
@@ -73,25 +73,25 @@ public class WidgetManager {
 
 		});
 
-		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> saveConfig());
+		ClientLifecycleEvents.CLIENT_STOPPING.register(_ -> saveConfig());
 
 		// Renders the hud (always on screen) widgets.
-		HudElementRegistry.attachElementBefore(VanillaHudElements.DEMO_TIMER, FANCY_TAB_HUD, (context, tickCounter) -> extractRenderState(context, true));
+		HudElementRegistry.attachElementBefore(VanillaHudElements.DEMO_TIMER, FANCY_TAB_HUD, (context, _) -> extractRenderState(context, true));
 		// Renders the tab widgets
-		HudElementRegistry.attachElementBefore(VanillaHudElements.PLAYER_LIST, FANCY_TAB, (context, tickCounter) -> extractRenderState(context, false));
+		HudElementRegistry.attachElementBefore(VanillaHudElements.PLAYER_LIST, FANCY_TAB, (context, _) -> extractRenderState(context, false));
 	}
 
-	private static void extractRenderState(GuiGraphicsExtractor graphics, boolean hud) {
+	private static void extractRenderState(GuiGraphicsExtractor context, boolean hud) {
 		if (!Utils.isOnSkyblock()) return;
 		Minecraft client = Minecraft.getInstance();
 
 		if (client.screen instanceof WidgetsConfigurationScreen) return;
 		Window window = client.getWindow();
 		float scale = SkyblockerConfigManager.get().uiAndVisuals.tabHud.tabHudScale / 100f;
-		Matrix3x2fStack matrices = graphics.pose();
+		Matrix3x2fStack matrices = context.pose();
 		matrices.pushMatrix();
 		matrices.scale(scale, scale);
-		WidgetManager.extractRenderState(graphics, (int) (window.getGuiScaledWidth() / scale), (int) (window.getGuiScaledHeight() / scale), hud);
+		WidgetManager.extractRenderState(context, (int) (window.getGuiScaledWidth() / scale), (int) (window.getGuiScaledHeight() / scale), hud);
 		matrices.popMatrix();
 	}
 
@@ -101,18 +101,18 @@ public class WidgetManager {
 	 *
 	 * @param hud true to only render the hud (always on screen) widgets, false to only render the tab widgets.
 	 */
-	private static void extractRenderState(GuiGraphicsExtractor graphics, int w, int h, boolean hud) {
+	private static void extractRenderState(GuiGraphicsExtractor context, int w, int h, boolean hud) {
 		Minecraft client = Minecraft.getInstance();
 		ScreenBuilder screenBuilder = getScreenBuilder(Utils.getLocation());
 		if (client.options.keyPlayerList.isDown()) {
 			if (hud || TabHud.shouldRenderVanilla()) return;
 			if (TabHud.toggleSecondary.isDown()) {
-				screenBuilder.run(graphics, w, h, ScreenLayer.SECONDARY_TAB);
+				screenBuilder.run(context, w, h, ScreenLayer.SECONDARY_TAB);
 			} else {
-				screenBuilder.run(graphics, w, h, ScreenLayer.MAIN_TAB);
+				screenBuilder.run(context, w, h, ScreenLayer.MAIN_TAB);
 			}
 		} else if (hud) {
-			screenBuilder.run(graphics, w, h, ScreenLayer.HUD);
+			screenBuilder.run(context, w, h, ScreenLayer.HUD);
 		}
 	}
 
@@ -132,7 +132,7 @@ public class WidgetManager {
 					}
 				}
 			}
-		} catch (NoSuchFileException e) {
+		} catch (NoSuchFileException _) {
 			LOGGER.warn("[Skyblocker] No hud widget config file found, using defaults");
 			fillDefaultConfig();
 		} catch (Exception e) {

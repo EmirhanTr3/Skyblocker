@@ -33,14 +33,14 @@ public class InventorySearch {
 
 	@Init
 	public static void init() {
-		ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+		ScreenEvents.AFTER_INIT.register((_, screen, _, _) -> {
 			UIAndVisualsConfig.InventorySearchConfig inventorySearchConfig = SkyblockerConfigManager.get().uiAndVisuals.inventorySearch;
 			if (!inventorySearchConfig.enabled.isEnabled() || !(screen instanceof AbstractContainerScreen<?> handledScreen)) return;
 			openedHandledScreen = null;
 
-			if (inventorySearchConfig.clickableText) Screens.getButtons(handledScreen).add(new SearchTextWidget(handledScreen));
+			if (inventorySearchConfig.clickableText) Screens.getWidgets(handledScreen).add(new SearchTextWidget(handledScreen));
 
-			ScreenKeyboardEvents.allowKeyPress(handledScreen).register((screen1, input) -> {
+			ScreenKeyboardEvents.allowKeyPress(handledScreen).register((_, input) -> {
 				if (input.key() == (inventorySearchConfig.ctrlK ? GLFW.GLFW_KEY_K : GLFW.GLFW_KEY_F) && input.hasControlDownWithQuirk()) {
 					InventorySearch.showSearchBar(handledScreen);
 					return false;
@@ -54,8 +54,8 @@ public class InventorySearch {
 		if (handledScreen == openedHandledScreen) return;
 		openedHandledScreen = handledScreen;
 		EditBox textFieldWidget = getTextFieldWidget(handledScreen);
-		Screens.getButtons(handledScreen).addFirst(textFieldWidget);
-		Screens.getButtons(handledScreen).removeIf(button -> button instanceof SearchTextWidget); // remove search text
+		Screens.getWidgets(handledScreen).addFirst(textFieldWidget);
+		Screens.getWidgets(handledScreen).removeIf(button -> button instanceof SearchTextWidget); // remove search text
 		handledScreen.setFocused(textFieldWidget);
 
 		ScreenEvents.remove(handledScreen).register(InventorySearch::onScreenClosed);
@@ -76,7 +76,7 @@ public class InventorySearch {
 	}
 
 	public static boolean slotMatches(Slot slot) {
-		return slotToMatch.computeIfAbsent(slot.index, i -> slot.hasItem() &&
+		return slotToMatch.computeIfAbsent(slot.index, _ -> slot.hasItem() &&
 				(slot.getItem().getHoverName().getString().toLowerCase(Locale.ENGLISH).contains(search) || ItemUtils.getLoreLineIf(slot.getItem(), s -> s.toLowerCase(Locale.ENGLISH).contains(search)) != null));
 	}
 
@@ -119,14 +119,14 @@ public class InventorySearch {
 		}
 
 		@Override
-		public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 			if (isHovered() != hoveredState) {
 				hoveredState = active = isHovered();
 				if (hoveredState) setMessage(underlinedText);
 				else setMessage(normalText);
 			}
 
-			super.renderWidget(graphics, mouseX, mouseY, delta);
+			super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
 		}
 	}
 
@@ -141,8 +141,8 @@ public class InventorySearch {
 		}
 
 		@Override
-		public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
-			super.renderWidget(graphics, mouseX, mouseY, deltaTicks);
+		public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+			super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
 			graphics.centeredText(textRenderer, message, getX() + width / 2, getY() - 1 - textRenderer.lineHeight, CommonColors.WHITE);
 		}
 

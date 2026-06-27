@@ -16,7 +16,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -57,7 +57,7 @@ public class SkyblockCraftingTableScreen extends AbstractContainerScreen<Skybloc
 		}));
 		if (!menu.mirrorverse) {
 			moreCraftsButton = new ImageButton(this.leftPos + 152, topPos + 63, 16, 16, MORE_CRAFTS_TEXTURES,
-					button -> this.slotClicked(menu.slots.get(26), menu.slots.get(26).index, 0, ClickType.PICKUP));
+					_ -> this.slotClicked(menu.slots.get(26), menu.slots.get(26).index, 0, ContainerInput.PICKUP));
 			moreCraftsButton.setTooltipDelay(Duration.ofMillis(250L));
 			moreCraftsButton.setTooltip(Tooltip.create(Component.literal("More Crafts")));
 			this.addRenderableWidget(moreCraftsButton);
@@ -78,29 +78,30 @@ public class SkyblockCraftingTableScreen extends AbstractContainerScreen<Skybloc
 	}
 
 	@Override
-	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		if (this.recipeBook.isVisible() && this.narrow) {
-			this.extractBackground(graphics, mouseX, mouseY, delta);
-			this.recipeBook.extractRenderState(graphics, mouseX, mouseY, delta);
+			this.extractBackground(graphics, mouseX, mouseY, a);
+			this.recipeBook.extractRenderState(graphics, mouseX, mouseY, a);
 		} else {
-			super.extractRenderState(graphics, mouseX, mouseY, delta);
-			this.recipeBook.extractRenderState(graphics, mouseX, mouseY, delta);
-			this.recipeBook.renderGhostRecipe(graphics, true);
+			super.extractRenderState(graphics, mouseX, mouseY, a);
+			this.recipeBook.extractRenderState(graphics, mouseX, mouseY, a);
+			this.recipeBook.extractGhostRecipe(graphics, true);
 		}
-		this.renderTooltip(graphics, mouseX, mouseY);
-		this.recipeBook.renderTooltip(graphics, mouseX, mouseY, null);
+		this.extractTooltip(graphics, mouseX, mouseY);
+		this.recipeBook.extractTooltip(graphics, mouseX, mouseY, null);
 	}
 
 	@Override
-	protected void renderSlot(GuiGraphicsExtractor graphics, Slot slot, int mouseX, int mouseY) {
+	protected void extractSlot(GuiGraphicsExtractor graphics, Slot slot, int mouseX, int mouseY) {
 		ItemStack stack = slot.getItem();
 		if (slot.index == 23 && stack.is(Items.BARRIER)) return;
 		if (stack.is(Items.GRAY_STAINED_GLASS_PANE) && stack.getSkyblockId().isEmpty()) return;
-		super.renderSlot(graphics, slot, mouseX, mouseY);
+		super.extractSlot(graphics, slot, mouseX, mouseY);
 	}
 
 	@Override
-	protected void renderBg(GuiGraphicsExtractor graphics, float delta, int mouseX, int mouseY) {
+	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+		super.extractBackground(graphics, mouseX, mouseY, a);
 		int i = this.leftPos;
 		int j = (this.height - this.imageHeight) / 2;
 		graphics.blit(RenderPipelines.GUI_TEXTURED, menu.mirrorverse ? MIRRORVERSE_TEXTURE.get() : TEXTURE.get(), i, j, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
@@ -132,7 +133,7 @@ public class SkyblockCraftingTableScreen extends AbstractContainerScreen<Skybloc
 	}
 
 	@Override
-	protected void slotClicked(Slot slot, int slotId, int button, ClickType actionType) {
+	protected void slotClicked(Slot slot, int slotId, int button, ContainerInput actionType) {
 		super.slotClicked(slot, slotId, button, actionType);
 		this.recipeBook.slotClicked(slot);
 	}

@@ -63,7 +63,7 @@ public class ItemTickList<T> extends ContainerObjectSelectionList<ItemTickList.I
 			ItemTickEntry entry = new ItemTickEntry(
 					Checkbox.builder(Component.nullToEmpty(item.toString()), minecraft.font)
 								.selected(whitelist == filters.contains(item))
-								.onValueChange((checkbox1, checked) -> {
+								.onValueChange((_, checked) -> {
 									if (whitelist) {
 										if (checked) filters.add(item);
 										else filters.remove(item);
@@ -93,7 +93,7 @@ public class ItemTickList<T> extends ContainerObjectSelectionList<ItemTickList.I
 		}
 
 		@Override
-		public void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+		public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
 			for (Checkbox child : children) {
 				child.setX(this.getX());
 				child.setY(this.getY());

@@ -50,7 +50,7 @@ public class BasicToast implements Toast {
 	}
 
 	@Override
-	public void render(GuiGraphicsExtractor graphics, Font textRenderer, long startTime) {
+	public void extractRenderState(GuiGraphicsExtractor graphics, Font textRenderer, long startTime) {
 		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, 0, 0, width(), height());
 		int offset;
 		if (icon != null) {

@@ -5,6 +5,7 @@ import de.hysky.skyblocker.SkyblockerMod;
 import de.hysky.skyblocker.skyblock.item.ItemProtection;
 import de.hysky.skyblocker.skyblock.profileviewer.utils.LevelFinder;
 import de.hysky.skyblocker.skyblock.tabhud.util.Ico;
+import de.hysky.skyblocker.utils.FlexibleItemStack;
 import de.hysky.skyblocker.utils.Formatters;
 import de.hysky.skyblocker.utils.render.GuiHelper;
 import java.awt.Color;
@@ -19,14 +20,13 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ItemStack;
 
 public class DungeonClassWidget {
 	private final String className;
 	private LevelFinder.LevelInfo classLevel;
 	private static final int CLASS_CAP = 50;
 	private JsonObject classData;
-	private final ItemStack stack;
+	private final FlexibleItemStack stack;
 	private boolean active = false;
 
 	private static final Identifier TEXTURE = SkyblockerMod.id("textures/gui/profile_viewer/icon_data_widget.png");
@@ -34,7 +34,7 @@ public class DungeonClassWidget {
 	private static final Identifier BAR_BACK = SkyblockerMod.id("bars/bar_back");
 
 	private static final Font textRenderer = Minecraft.getInstance().font;
-	private static final Map<String, ItemStack> CLASS_ICON = Map.ofEntries(
+	private static final Map<String, FlexibleItemStack> CLASS_ICON = Map.ofEntries(
 			Map.entry("Healer", Ico.S_POTION),
 			Map.entry("Mage", Ico.B_ROD),
 			Map.entry("Berserk", Ico.IRON_SWORD),
@@ -49,20 +49,20 @@ public class DungeonClassWidget {
 			classData = playerProfile.getAsJsonObject("dungeons").getAsJsonObject("player_classes").getAsJsonObject(this.className.toLowerCase(Locale.ENGLISH));
 			classLevel = LevelFinder.getLevelInfo("Catacombs", classData.get("experience").getAsLong());
 			active = playerProfile.getAsJsonObject("dungeons").get("selected_dungeon_class").getAsString().equals(className.toLowerCase(Locale.ENGLISH));
-		} catch (Exception ignored) {
+		} catch (Exception _) {
 			classLevel = LevelFinder.getLevelInfo("", 0);
 		}
 	}
 
 	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int x, int y) {
 		graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0, 0, 109, 26, 109, 26);
-		graphics.item(stack, x + 3, y + 5);
+		graphics.item(stack.getStackOrThrow(), x + 3, y + 5);
 		if (active) ItemProtection.drawSlotIcon(graphics, x + 3, y + 5);
 
 		graphics.text(textRenderer, className + " " + classLevel.level, x + 31, y + 5, Color.WHITE.getRGB(), false);
 		Color fillColor = classLevel.level >= CLASS_CAP ? Color.MAGENTA : Color.GREEN;
 		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BAR_BACK, x + 30, y + 15, 75, 6);
-		GuiHelper.renderNineSliceColored(graphics, BAR_FILL, x + 30, y + 15, (int) (75 * classLevel.fill), 6, fillColor);
+		GuiHelper.nineSliceColored(graphics, BAR_FILL, x + 30, y + 15, (int) (75 * classLevel.fill), 6, fillColor);
 
 		if (mouseX > x + 30 && mouseX < x + 105 && mouseY > y + 12 && mouseY < y + 22) {
 			List<Component> tooltipText = new ArrayList<>();

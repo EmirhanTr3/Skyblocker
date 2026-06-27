@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
+import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -41,7 +42,7 @@ public class EditBarColorPopup extends AbstractPopupScreen {
 		layout.addChild(colorSelector);
 
 		LinearLayout horizontal = LinearLayout.horizontal();
-		Button buttonWidget = Button.builder(Component.literal("Cancel"), button -> onClose()).width(80).build();
+		Button buttonWidget = Button.builder(Component.literal("Cancel"), _ -> onClose()).width(80).build();
 		horizontal.addChild(buttonWidget);
 		horizontal.addChild(Button.builder(Component.literal("Done"), this::done).width(80).build());
 
@@ -57,9 +58,9 @@ public class EditBarColorPopup extends AbstractPopupScreen {
 	}
 
 	@Override
-	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		super.extractBackground(graphics, mouseX, mouseY, delta);
-		drawPopupBackground(graphics, layout.getX(), layout.getY(), layout.getWidth(), layout.getHeight());
+	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+		super.extractBackground(graphics, mouseX, mouseY, a);
+		extractPopupBackground(graphics, layout.getX(), layout.getY(), layout.getWidth(), layout.getHeight());
 	}
 
 	private static class BasicColorSelector extends AbstractContainerWidget {
@@ -67,7 +68,7 @@ public class EditBarColorPopup extends AbstractPopupScreen {
 		private final EnterConfirmTextFieldWidget textFieldWidget;
 
 		private BasicColorSelector(int x, int y, int width, Runnable onEnter) {
-			super(x, y, width, 15, Component.literal("edit color"));
+			super(x, y, width, 15, Component.literal("edit color"), AbstractScrollArea.defaultSettings(4));
 			textFieldWidget = new EnterConfirmTextFieldWidget(Minecraft.getInstance().font, getX() + 16, getY(), width - 16, 15, Component.empty(), onEnter);
 			textFieldWidget.setResponder(this::onTextChange);
 			textFieldWidget.setFilter(s -> s.length() <= 6);
@@ -89,17 +90,17 @@ public class EditBarColorPopup extends AbstractPopupScreen {
 			try {
 				color = Integer.parseInt(text, 16) | 0xFF000000;
 				validColor = true;
-			} catch (NumberFormatException e) {
+			} catch (NumberFormatException _) {
 				color = 0;
 				validColor = false;
 			}
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-			GuiHelper.drawBorder(graphics, getX(), getY(), 15, 15, validColor ? -1 : 0xFFDD0000);
+		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+			GuiHelper.border(graphics, getX(), getY(), 15, 15, validColor ? -1 : 0xFFDD0000);
 			graphics.fill(getX() + 1, getY() + 1, getX() + 14, getY() + 14, color);
-			textFieldWidget.renderWidget(graphics, mouseX, mouseY, delta);
+			textFieldWidget.extractWidgetRenderState(graphics, mouseX, mouseY, a);
 		}
 
 		@Override

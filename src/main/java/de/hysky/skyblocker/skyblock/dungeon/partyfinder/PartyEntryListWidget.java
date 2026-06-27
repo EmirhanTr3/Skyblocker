@@ -10,6 +10,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
 
 public class PartyEntryListWidget extends ContainerObjectSelectionList<PartyEntry> {
 	protected List<PartyEntry> partyEntries;
@@ -91,21 +92,21 @@ public class PartyEntryListWidget extends ContainerObjectSelectionList<PartyEntr
 	}
 
 	@Override
-	public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		//graphics.drawGuiTexture(BACKGROUND_TEXTURE, x, top-8, getRowWidth()+16+6, bottom-top+16);
+	public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+		//context.drawGuiTexture(BACKGROUND_TEXTURE, x, top-8, getRowWidth()+16+6, bottom-top+16);
 
 		if (children().isEmpty()) {
 			Component string = Component.translatable("skyblocker.partyFinder.loadingError");
 			Font textRenderer = Minecraft.getInstance().font;
-			graphics.textWithWordWrap(textRenderer, string, getRowLeft(), getY() + 10, getRowWidth(), 0xFFFFFFFF, false);
-		} else super.renderWidget(graphics, mouseX, mouseY, delta);
+			graphics.textWithWordWrap(textRenderer, string, getRowLeft(), getY() + 10, getRowWidth(), CommonColors.WHITE, false);
+		} else super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
 	}
 
 	@Override
-	protected void renderListSeparators(GuiGraphicsExtractor graphics) {
+	protected void extractListSeparators(GuiGraphicsExtractor graphics) {
 	}
 
 	@Override
-	protected void renderListBackground(GuiGraphicsExtractor graphics) {
+	protected void extractListBackground(GuiGraphicsExtractor graphics) {
 	}
 }

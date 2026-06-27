@@ -21,10 +21,6 @@ import de.hysky.skyblocker.skyblock.item.tooltip.BackpackPreview;
 import de.hysky.skyblocker.skyblock.item.tooltip.CompactorDeletorPreview;
 import de.hysky.skyblocker.skyblock.item.wikilookup.WikiLookupManager;
 import de.hysky.skyblocker.skyblock.museum.MuseumItemCache;
-import de.hysky.skyblocker.skyblock.museum.MuseumManager;
-import de.hysky.skyblocker.skyblock.quicknav.QuickNav;
-import de.hysky.skyblocker.skyblock.quicknav.QuickNavButton;
-import de.hysky.skyblocker.utils.ItemUtils;
 import de.hysky.skyblocker.utils.Utils;
 import de.hysky.skyblocker.utils.container.ContainerSolver;
 import de.hysky.skyblocker.utils.container.ContainerSolverManager;
@@ -39,12 +35,11 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.Item;
@@ -119,54 +114,9 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 	protected int topPos;
 	@Shadow
 	protected int imageWidth;
-	@Unique
-	private List<QuickNavButton> quickNavButtons;
 
 	protected AbstractContainerScreenMixin(Component title) {
 		super(title);
-	}
-
-	@Inject(method = "init", at = @At("RETURN"))
-	private void skyblocker$initQuickNav(CallbackInfo ci) {
-		if (Utils.isOnSkyblock() && SkyblockerConfigManager.get().quickNav.enableQuickNav && minecraft != null && minecraft.player != null && !minecraft.player.isCreative()) {
-			for (QuickNavButton quickNavButton : quickNavButtons = QuickNav.init(getTitle().getString().trim())) {
-				addWidget(quickNavButton);
-			}
-		}
-	}
-
-	@SuppressWarnings("unused")
-	@Inject(method = "init", at = @At("TAIL"))
-	private void skyblocker$initMuseumOverlay(CallbackInfo ci) {
-		if (Utils.isOnSkyblock() && SkyblockerConfigManager.get().uiAndVisuals.museumOverlay && minecraft != null && minecraft.player != null && getTitle().getString().contains("Museum")) {
-			int overlayWidth = MuseumManager.BACKGROUND_WIDTH; // width of the overlay
-			int spacing = MuseumManager.SPACING; // space between inventory and overlay
-
-			// Default: center inventory
-			int inventoryX = (this.width - this.imageWidth) / 2;
-
-			// If overlay would go off the right edge, shift inventory left
-			if (inventoryX + this.imageWidth + spacing + overlayWidth > this.width) {
-				inventoryX = this.width - (this.imageWidth + overlayWidth + spacing);
-				if (inventoryX < 0) inventoryX = 0;
-			}
-			this.leftPos = inventoryX;
-
-			new MuseumManager(this, this.leftPos, this.topPos, this.imageWidth);
-		}
-	}
-
-	@WrapOperation(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderBg(Lnet/minecraft/client/gui/GuiGraphicsExtractor;FII)V"))
-	private void skyblocker$DrawMuseumOverlayBackground(AbstractContainerScreen<?> instance, GuiGraphicsExtractor graphics, float delta, int mouseX, int mouseY, Operation<Void> original) {
-		if (Utils.isOnSkyblock() && SkyblockerConfigManager.get().uiAndVisuals.museumOverlay && minecraft != null && minecraft.player != null && getTitle().getString().contains("Museum")) {
-			// Custom museum overlay background drawing
-			int rows = 6;
-			graphics.blit(RenderPipelines.GUI_TEXTURED, GENERIC_CONTAINER_TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, rows * 18 + 17, 256, 256);
-			graphics.blit(RenderPipelines.GUI_TEXTURED, GENERIC_CONTAINER_TEXTURE, this.leftPos, this.topPos + rows * 18 + 17, 0.0F, 126.0F, this.imageWidth, 96, 256, 256);
-		} else {
-			// Call vanilla
-			original.call(instance, graphics, delta, mouseX, mouseY);
-		}
 	}
 
 	@Inject(at = @At("HEAD"), method = "keyPressed")
@@ -192,7 +142,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 	public boolean skyblocker$passThroughSearchFieldUnfocusedClicks(boolean superClicked, MouseButtonEvent click, boolean doubled) {
 		//Handle Search Field clicks - as of 1.21.4 the game will only send clicks to the selected element rather than trying to send one to each and stopping when the first returns true (if any).
 		if (!superClicked) {
-			Optional<AbstractWidget> searchField = Screens.getButtons(this).stream()
+			Optional<AbstractWidget> searchField = Screens.getWidgets(this).stream()
 					.filter(InventorySearch.SearchTextFieldWidget.class::isInstance)
 					.findFirst();
 
@@ -204,43 +154,16 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 		return superClicked;
 	}
 
-	/**
-	 * Draws the unselected tabs in front of the background blur, but behind the main inventory, similar to creative inventory tabs
-	 */
-	@Inject(method = "extractBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderBg(Lnet/minecraft/client/gui/GuiGraphicsExtractor;FII)V"))
-	private void skyblocker$drawUnselectedQuickNavButtons(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-		if (quickNavButtons != null) for (QuickNavButton quickNavButton : quickNavButtons) {
-			// Render the button behind the main inventory background if it's not toggled or if it's still fading in
-			if (!quickNavButton.toggled() || quickNavButton.getAlpha() < 255) {
-				quickNavButton.setRenderInFront(false);
-				quickNavButton.extractRenderState(graphics, mouseX, mouseY, delta);
-			}
-		}
-	}
-
-	/**
-	 * Draws the selected tab in front of the background blur and the main inventory, similar to creative inventory tabs
-	 */
-	@Inject(method = "extractBackground", at = @At("RETURN"))
-	private void skyblocker$drawSelectedQuickNavButtons(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-		if (quickNavButtons != null) for (QuickNavButton quickNavButton : quickNavButtons) {
-			if (quickNavButton.toggled()) {
-				quickNavButton.setRenderInFront(true);
-				quickNavButton.extractRenderState(graphics, mouseX, mouseY, delta);
-			}
-		}
-	}
-
 	@SuppressWarnings("unchecked")
-	@Inject(method = "renderTooltip", at = @At("HEAD"))
-	private void skyblocker$beforeTooltipDrawn(CallbackInfo ci, @Local(argsOnly = true) GuiGraphicsExtractor graphics) {
-		ContainerSolverManager.onDraw(graphics, (AbstractContainerScreen<ChestMenu>) (Object) this, this.menu.slots);
+	@Inject(method = "extractTooltip", at = @At("HEAD"))
+	private void skyblocker$beforeTooltipExtracted(CallbackInfo ci, @Local(name = "graphics") GuiGraphicsExtractor graphics) {
+		ContainerSolverManager.onExtract(graphics, (AbstractContainerScreen<ChestMenu>) (Object) this, this.menu.slots);
 	}
 
 	@SuppressWarnings("DataFlowIssue")
 	// makes intellij be quiet about this.focusedSlot maybe being null. It's already null checked in mixined method.
-	@WrapOperation(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;)V"))
-	private void skyblocker$drawMouseOverTooltip(
+	@WrapOperation(method = "extractTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;)V"))
+	private void skyblocker$extractMouseOverTooltip(
 			GuiGraphicsExtractor graphics,
 			Font textRenderer,
 			List<Component> text,
@@ -249,7 +172,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 			int y,
 			Identifier texture,
 			Operation<Void> original,
-			@Local(ordinal = 0) ItemStack stack
+			@Local(name = "item") ItemStack stack
 	) {
 		// Hide tooltips from items that have been visually replaced by a container solver with air (since the Slot#hasStack still passes)
 		if (ContainerSolverManager.getCurrentSolver() instanceof StackDisplayModifier && stack.isEmpty()) {
@@ -270,14 +193,14 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 
 		// Backpack Preview
 		boolean shiftDown = SkyblockerConfigManager.get().uiAndVisuals.backpackPreviewWithoutShift ^ GuiHelper.hasShiftDown();
-		if (shiftDown && getTitle().getString().equals("Storage") && hoveredSlot.container != minecraft.player.getInventory() && BackpackPreview.renderPreview(graphics, this, hoveredSlot.getContainerSlot(), x, y)) {
+		if (shiftDown && getTitle().getString().equals("Storage") && hoveredSlot.container != minecraft.player.getInventory() && BackpackPreview.extractPreview(graphics, this, hoveredSlot.getContainerSlot(), x, y)) {
 			return;
 		}
 
 		// Compactor Preview
 		if (SkyblockerConfigManager.get().uiAndVisuals.compactorDeletorPreview) {
 			Matcher matcher = CompactorDeletorPreview.NAME.matcher(stack.getSkyblockId());
-			if (matcher.matches() && CompactorDeletorPreview.drawPreview(graphics, stack, getTooltipFromContainerItem(stack), matcher.group("type"), matcher.group("size"), x, y)) {
+			if (matcher.matches() && CompactorDeletorPreview.extractPreview(graphics, stack, getTooltipFromContainerItem(stack), matcher.group("type"), matcher.group("size"), x, y)) {
 				return;
 			}
 		}
@@ -285,13 +208,13 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 		original.call(graphics, textRenderer, text, data, x, y, texture);
 	}
 
-	@ModifyVariable(method = "renderTooltip", at = @At(value = "STORE"))
+	@ModifyVariable(method = "extractTooltip", at = @At(value = "STORE"))
 	private ItemStack skyblocker$modifyTooltipDisplayStack(ItemStack stack) {
 		return skyblocker$modifyDisplayStack(hoveredSlot, stack, ContainerSolverManager.getCurrentSolver());
 	}
 
-	@ModifyVariable(method = "renderSlot", at = @At(value = "LOAD", ordinal = 3), ordinal = 0)
-	private ItemStack skyblocker$modifyDisplayStack(ItemStack stack, @Local(argsOnly = true) Slot slot) {
+	@ModifyVariable(method = "extractSlot", at = @At(value = "LOAD", ordinal = 3), ordinal = 0)
+	private ItemStack skyblocker$modifyDisplayStack(ItemStack stack, @Local(name = "slot") Slot slot) {
 		return skyblocker$modifyDisplayStack(slot, stack, ContainerSolverManager.getCurrentSolver());
 	}
 
@@ -307,10 +230,10 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 	 * The naming of this method in yarn is half true, its mostly to handle slot/item interactions (which are mouse or keyboard clicks)
 	 * For example, using the drop key bind while hovering over an item will invoke this method to drop the players item
 	 *
-	 * @implNote This runs before {@link AbstractContainerMenu#clicked(int, int, ClickType, net.minecraft.world.entity.player.Player)}
+	 * @implNote This runs before {@link AbstractContainerMenu#clicked(int, int, ContainerInput, net.minecraft.world.entity.player.Player)}
 	 */
-	@Inject(method = "slotClicked(Lnet/minecraft/world/inventory/Slot;IILnet/minecraft/world/inventory/ClickType;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;handleInventoryMouseClick(IIILnet/minecraft/world/inventory/ClickType;Lnet/minecraft/world/entity/player/Player;)V"), cancellable = true)
-	private void skyblocker$onSlotClick(Slot slot, int slotId, int button, ClickType actionType, CallbackInfo ci) {
+	@Inject(method = "slotClicked(Lnet/minecraft/world/inventory/Slot;IILnet/minecraft/world/inventory/ContainerInput;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;handleContainerInput(IIILnet/minecraft/world/inventory/ContainerInput;Lnet/minecraft/world/entity/player/Player;)V"), cancellable = true)
+	private void skyblocker$onSlotClick(Slot slot, int slotId, int button, ContainerInput containerInput, CallbackInfo ci) {
 		if (!Utils.isOnSkyblock()) return;
 
 		// Item Protection
@@ -342,7 +265,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 		}
 		// Item Protection
 		// When you click your drop key while hovering over an item
-		if (actionType == ClickType.THROW && ItemProtection.isItemProtected(stack)) {
+		if (containerInput == ContainerInput.THROW && ItemProtection.isItemProtected(stack)) {
 			ci.cancel();
 			return;
 		}
@@ -371,17 +294,16 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 			return;
 		}
 
+		// Prevent selling protected items to NPC shops
+		if (this.menu instanceof ChestMenu && ItemProtection.isItemProtected(stack)
+				&& !ItemProtection.isNpcSellButton(slot) && ItemProtection.isNpcSellMenu(this.menu)) {
+			ci.cancel();
+			return;
+		}
+
 		switch (this.menu) {
 			case ChestMenu genericContainerScreenHandler when genericContainerScreenHandler.getRowCount() == 6 -> {
 				VisitorHelper.onSlotClick(slot, slotId, title, genericContainerScreenHandler.getSlot(13));
-				// Prevent selling to NPC shops
-				ItemStack sellStack = this.menu.slots.get(49).getItem();
-				if (sellStack.getHoverName().getString().equals("Sell Item") || ItemUtils.getLoreLineIf(sellStack, text -> text.contains("buyback")) != null) {
-					if (slotId != 49 && ItemProtection.isItemProtected(stack)) {
-						ci.cancel();
-						return;
-					}
-				}
 			}
 
 			case ChestMenu genericContainerScreenHandler when title.equals(MuseumItemCache.DONATION_CONFIRMATION_SCREEN_TITLE) -> //Museum Item Cache donation tracking
@@ -402,8 +324,8 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 		}
 	}
 
-	@Inject(method = "renderSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;item(Lnet/minecraft/world/item/ItemStack;III)V"))
-	private void skyblocker$drawOnItem(CallbackInfo ci, @Local(argsOnly = true) GuiGraphicsExtractor graphics, @Local(argsOnly = true) Slot slot) {
+	@Inject(method = "extractSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;item(Lnet/minecraft/world/item/ItemStack;III)V"))
+	private void skyblocker$drawOnItem(CallbackInfo ci, @Local(name = "graphics") GuiGraphicsExtractor graphics, @Local(name = "slot") Slot slot) {
 		if (Utils.isOnSkyblock()) {
 			ItemBackgroundManager.drawBackgrounds(slot.getItem(), graphics, slot.x, slot.y);
 		}
@@ -419,15 +341,15 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 		}
 	}
 
-	@Inject(method = "renderSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;itemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V"))
-	private void skyblocker$drawSlotText(CallbackInfo ci, @Local(argsOnly = true) GuiGraphicsExtractor graphics, @Local(argsOnly = true) Slot slot) {
+	@Inject(method = "extractSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;itemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V"))
+	private void skyblocker$drawSlotText(CallbackInfo ci, @Local(name = "graphics") GuiGraphicsExtractor graphics, @Local(name = "slot") Slot slot) {
 		if (Utils.isOnSkyblock()) {
-			SlotTextManager.renderSlotText(graphics, font, slot);
+			SlotTextManager.extractSlotText(graphics, font, slot);
 		}
 	}
 
-	@WrapWithCondition(method = "renderLabels", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V", ordinal = 0))
-	private boolean skyblocker$hideChestName(GuiGraphicsExtractor graphics, Font font, Component component, int i, int j, int k, boolean bl) {
+	@WrapWithCondition(method = "extractLabels", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V", ordinal = 0))
+	private boolean skyblocker$hideChestName(GuiGraphicsExtractor graphics, Font font, Component component, int x, int y, int colour, boolean shadow) {
 		return !ChestValue.hideChestNameLabel;
 	}
 }

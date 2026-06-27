@@ -1,7 +1,7 @@
 package de.hysky.skyblocker.skyblock.tabhud.widget.element;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -31,7 +31,7 @@ public class PlayerElement extends Element {
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor graphics, int x, int y) {
-		PlayerFaceRenderer.draw(graphics, tex, x, y, SKIN_ICO_DIM, true, false, -1);
+		PlayerFaceExtractor.extractRenderState(graphics, tex, x, y, SKIN_ICO_DIM, true, false, -1);
 		graphics.text(txtRend, name, x + SKIN_ICO_DIM + PAD_S, y, CommonColors.WHITE, false);
 	}
 }
