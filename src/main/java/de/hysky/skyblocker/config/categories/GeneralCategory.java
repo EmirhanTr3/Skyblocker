@@ -427,6 +427,14 @@ public class GeneralCategory {
 										newValue -> config.general.itemProtection.displayChatNotification = newValue)
 								.controller(ConfigUtils.createBooleanController())
 								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.literal("Protected Item Star Icon"))
+								.description(Component.literal("Eliminates the forbidden star from appearing ever again."))
+								.binding(defaults.general.itemProtection.displayItemStarIcon,
+										() -> config.general.itemProtection.displayItemStarIcon,
+										newValue -> config.general.itemProtection.displayItemStarIcon = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
 						.build())
 
 				//Wiki Lookup

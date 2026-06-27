@@ -198,6 +198,7 @@ public class GeneralConfig {
 		public SlotLockStyle slotLockStyle = SlotLockStyle.CLASSIC;
 
 		public boolean displayChatNotification = true;
+		public boolean displayItemStarIcon = true;
 
 		public boolean protectValuableConsumables = true;
 	}
