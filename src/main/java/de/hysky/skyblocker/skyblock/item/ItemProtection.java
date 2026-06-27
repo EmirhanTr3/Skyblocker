@@ -51,7 +51,9 @@ public class ItemProtection {
 	}
 
 	public static void drawSlotIcon(GuiGraphicsExtractor graphics, int slotX, int slotY) {
-		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ItemProtection.ITEM_PROTECTION_TEX, slotX, slotY, 16, 16);
+		if (SkyblockerConfigManager.get().general.itemProtection.displayItemStarIcon) {
+			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ItemProtection.ITEM_PROTECTION_TEX, slotX, slotY, 16, 16);
+		}
 	}
 
 	public static boolean isItemProtected(@Nullable ItemStack stack) {
