@@ -8,6 +8,7 @@ import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 
+import com.mojang.logging.LogUtils;
 import de.hysky.skyblocker.compatibility.CaxtonCompatibility;
 import de.hysky.skyblocker.compatibility.ModernUICompatibility;
 import de.hysky.skyblocker.mixins.accessors.GuiGraphicsExtractorInvoker;
@@ -143,8 +144,19 @@ public class GuiHelper {
 			int requiredHeight = mainRenderTarget.height;
 			GpuTextureView blitTextureView = BLIT_TEXTURE_POOL.getTextureView(blitIndexForFrame);
 
-			// Copy the main render target colour texture to our temporary one since you cannot read from and write to the same texture in a single draw.
-			RenderSystem.getDevice().createCommandEncoder().copyTextureToTexture(mainRenderTarget.getColorTexture(), blitTextureView.texture(), 0, 0, 0, 0, 0, requiredWidth, requiredHeight);
+			var destination = blitTextureView.texture();
+
+			if (!(requiredWidth <= destination.getWidth(0) && requiredHeight <= destination.getHeight(0))) {
+				// ignore if the texture cant be drawn on screen due to width/height change for some reason
+				LogUtils.getLogger().error("Dest texture ({}x{}) is not large enough to write a rectangle of {}x{} at {}x{}", destination.getWidth(0), destination.getHeight(0), requiredWidth, requiredHeight, 0, 0);
+			} else {
+				// Copy the main render target colour texture to our temporary one since you cannot read from and write to the same texture in a single draw.
+				RenderSystem.getDevice().createCommandEncoder().copyTextureToTexture(
+						mainRenderTarget.getColorTexture(),
+						destination,
+						0, 0, 0, 0, 0,
+						requiredWidth, requiredHeight);
+			}
 			blitIndexForFrame = -1;
 		}
 	}
