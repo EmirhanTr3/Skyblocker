@@ -9,6 +9,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
+import de.hysky.skyblocker.config.SkyblockerConfigManager;
+
 /**
  * Holds generic static constants
  */
@@ -21,7 +23,9 @@ public interface Constants {
 	Pattern PLAYER_NAME = Pattern.compile("(?:\\[[0-9]+\\] )?(?:[" + Constants.LEVEL_EMBLEMS + "] )?(?:\\[[A-Z+]+\\] )?([A-Za-z0-9_]+)");
 
 	Supplier<MutableComponent> PREFIX = () -> {
-		if (FunUtils.shouldEnableFun()) {
+		if (!SkyblockerConfigManager.get().chat.chatPrefixConfig.toggle) {
+			return Component.empty();
+		} else if (FunUtils.shouldEnableFun()) {
 			return Component.empty().append(Component.literal("[").withStyle(ChatFormatting.GRAY))
 					.append(FunUtils.getRandomFunName())
 					.append(Component.literal("] ").withStyle(ChatFormatting.GRAY));
@@ -37,7 +41,7 @@ public interface Constants {
 
 		return Component.empty()
 				.append(Component.literal("[").withStyle(ChatFormatting.GRAY))
-				.append(createSkyblockerGradient("Skyblocker"))
+				.append(createSkyblockerGradient(SkyblockerConfigManager.get().chat.chatPrefixConfig.prefix))
 				.append(Component.literal("] ").withStyle(ChatFormatting.GRAY));
 	};
 

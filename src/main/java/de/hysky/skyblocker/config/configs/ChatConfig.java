@@ -60,4 +60,12 @@ public class ChatConfig {
 		@Deprecated
 		public transient int announcementScale = 3;
 	}
+
+	public ChatPrefixConfig chatPrefixConfig = new ChatPrefixConfig();
+
+	public static class ChatPrefixConfig {
+		public boolean toggle = true;
+
+		public String prefix = "Skyblocker";
+	}
 }

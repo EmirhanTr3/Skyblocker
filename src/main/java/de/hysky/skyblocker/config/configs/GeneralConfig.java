@@ -204,6 +204,8 @@ public class GeneralConfig {
 
 		public boolean displayChatNotification = true;
 
+		public boolean displayItemStarIcon = true;
+
 		public boolean protectValuableConsumables = true;
 	}
 
